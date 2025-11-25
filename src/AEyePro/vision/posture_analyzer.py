@@ -154,15 +154,20 @@ class PostureAnalyzer:
         shoulder_f = np.mean(self._shoulder_filter)
         dist_f = np.mean(self._dist_filter) if self._dist_filter else None
 
-        # Phân loại chất lượng tư thế
-        status = self._classify(yaw_f, pitch_f, shoulder_f, dist_f)
+        # Chuẩn hóa góc về quanh 0 độ [-90, +90]
+        yaw_normalized = self._normalize_angle_to_zero(yaw_f)
+        pitch_normalized = self._normalize_angle_to_zero(pitch_f)
+        shoulder_normalized = self._normalize_angle_to_zero(shoulder_f)
 
-        # Cập nhật latest result
+        # Phân loại chất lượng tư thế (dùng góc đã chuẩn hóa)
+        status = self._classify_normalized(yaw_normalized, pitch_normalized, shoulder_normalized, dist_f)
+
+        # Cập nhật latest result với góc đã chuẩn hóa
         self._latest = {
             "timestamp": time.time(),
-            "head_side_angle": yaw_f,
-            "head_updown_angle": pitch_f,
-            "shoulder_tilt": shoulder_f,
+            "head_side_angle": yaw_normalized,
+            "head_updown_angle": pitch_normalized,
+            "shoulder_tilt": shoulder_normalized,
             "eye_distance_cm": dist_f,
             "status": status,
         }
@@ -208,11 +213,66 @@ class PostureAnalyzer:
             v2: Vector thứ hai
 
         Returns:
-            float: Góc tính bằng độ
+            float: Góc tính bằng độ [0, 180]
         """
         denom = max(np.linalg.norm(v1) * np.linalg.norm(v2), 1e-7)
         cos_ang = np.clip(np.dot(v1, v2) / denom, -1.0, 1.0)
         return float(np.degrees(np.arccos(cos_ang)))
+
+    @staticmethod
+    def _normalize_angle_to_zero(angle: float) -> float:
+        """
+        Chuẩn hóa góc về quanh 0 độ trong khoảng [-90, +90]
+
+        Ví dụ:
+        - 170° → -10° (vì 170° gần -10° hơn là 170°)
+        - 150° → -30°
+        - 95° → -85°
+        - 90° → 90° (giữ nguyên)
+        - 45° → 45° (giữ nguyên)
+        - 0° → 0° (giữ nguyên)
+
+        Args:
+            angle: Góc đầu vào [0, 180]
+
+        Returns:
+            float: Góc đã chuẩn hóa về [-90, +90]
+        """
+        # Giữ nguyên góc trong [-90, +90]
+        if -90 <= angle <= 90:
+            return angle
+
+        # Với góc > 90, chuyển về [-90, 0] bằng cách trừ 180
+        if angle > 90:
+            return angle - 180
+
+        # Với góc < -90, chuyển về [0, 90] bằng cách cộng 180
+        return angle + 180
+
+    def _classify_normalized(self, yaw: float, pitch: float, shoulder: float, dist: Optional[float]) -> str:
+        """
+        Phân loại chất lượng tư thế sử dụng góc đã chuẩn hóa
+
+        Args:
+            yaw: Góc quay ngang đầu đã chuẩn hóa [-90, +90]
+            pitch: Góc nghiêng đầu đã chuẩn hóa [-90, +90]
+            shoulder: Góc nghiêng vai đã chuẩn hóa [-90, +90]
+            dist: Khoảng cách đến màn hình
+
+        Returns:
+            str: "good", "poor", hoặc "unknown"
+        """
+        # Với góc đã chuẩn hóa, chỉ cần kiểm tra giá trị tuyệt đối
+        if abs(yaw) > self._max_head_yaw:
+            return "poor"
+        if abs(pitch) > self._max_head_pitch:
+            return "poor"
+        if abs(shoulder) > self._max_shoulder_tilt:
+            return "poor"
+        if dist is not None and (dist < self._min_dist_cm or dist > self._max_dist_cm):
+            return "poor"
+
+        return "good"
 
     def _classify(self, yaw: float, pitch: float, shoulder: float, dist: Optional[float]) -> str:
         """
@@ -233,20 +293,17 @@ class PostureAnalyzer:
         Returns:
             str: "good", "poor", hoặc "unknown"
         """
-        # Chuẩn hóa góc về [0, 180] và lấy góc nhỏ nhất so với trục chuẩn
-        def min_angle(a):
-            return min(abs(a), abs(180 - abs(a)))
+        # Sử dụng hàm chuẩn hóa mới để一致 với analyze()
+        yaw_norm = self._normalize_angle_to_zero(yaw)
+        pitch_norm = self._normalize_angle_to_zero(pitch)
+        shoulder_norm = self._normalize_angle_to_zero(shoulder)
 
-        yaw_val = min_angle(yaw)
-        pitch_val = min_angle(pitch)
-        shoulder_val = min_angle(shoulder)
-
-        # Kiểm tra từng ngưỡng
-        if yaw_val > self._max_head_yaw:
+        # Kiểm tra từng ngưỡng với góc đã chuẩn hóa
+        if abs(yaw_norm) > self._max_head_yaw:
             return "poor"
-        if pitch_val > self._max_head_pitch:
+        if abs(pitch_norm) > self._max_head_pitch:
             return "poor"
-        if shoulder_val > self._max_shoulder_tilt:
+        if abs(shoulder_norm) > self._max_shoulder_tilt:
             return "poor"
         if dist is not None and (dist < self._min_dist_cm or dist > self._max_dist_cm):
             return "poor"

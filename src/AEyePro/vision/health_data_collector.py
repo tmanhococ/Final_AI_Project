@@ -135,7 +135,7 @@ class HealthDataCollector:
             self.drowsiness_count += 1
 
         self._last_blink_state = blink_now
-        self._last_drowsy_state = drowsy_state = drowsy_now
+        self._last_drowsy_state = drowsy_now
         self._latest = health_data.copy()
 
         # Cập nhật thống kê runtime
@@ -157,27 +157,34 @@ class HealthDataCollector:
             "total_blinks": self.blink_count,
             "total_drowsiness_events": self.drowsiness_count,
             "avg_distance_cm": self.sum_dist / self.total_records if self.total_records > 0 else 0,
-            "avg_head_tilt_deg": self.sum_head_tilt / self.total_records if self.total_records > 0 else 0,
+            # Focus: 3 key posture angles
+            "avg_shoulder_tilt_deg": self.sum_shoulder_tilt / self.total_records if self.total_records > 0 else 0,  # Góc vai
+            "avg_head_pitch_deg": self.sum_head_pitch / self.total_records if self.total_records > 0 else 0,     # Góc đầu trước-sau
+            "avg_head_yaw_deg": self.sum_head_yaw / self.total_records if self.total_records > 0 else 0,         # Góc đầu trái-phải
             "blink_rate_per_minute": (self.blink_count / session_duration * 60) if session_duration > 0 else 0,
         }
 
     # ----------------------------- internal --------------------------- #
     def _reset_stats(self):
         """
-        Reset tất cả thống kê
+        Reset tất cả thống kê - Focus on 3 key posture angles
         """
         self.total_records = 0
         self.total_blinks = 0
-        self.sum_dist = 0.0
-        self.sum_head_tilt = 0.0
         self.blink_count = 0
         self.drowsiness_count = 0
         self._last_blink_state = False
         self._last_drowsy_state = False
 
+        # Focus: 3 key posture angles statistics
+        self.sum_dist = 0.0
+        self.sum_shoulder_tilt = 0.0    # Góc vai
+        self.sum_head_pitch = 0.0       # Góc đầu trước-sau
+        self.sum_head_yaw = 0.0         # Góc đầu trái-phải
+
     def _update_runtime_stats(self, health_data: Dict[str, Any]) -> None:
         """
-        Cập nhật thống kê realtime từ health data
+        Cập nhật thống kê realtime từ health data - Focus on 3 key posture angles
 
         Args:
             health_data: Dictionary containing health metrics
@@ -187,9 +194,14 @@ class HealthDataCollector:
         if distance is not None:
             self.sum_dist += distance
 
-        # Cập nhật head tilt trung bình
-        head_tilt = health_data.get("head_yaw", 0)
-        self.sum_head_tilt += abs(head_tilt)
+        # Focus: Cập nhật 3 góc tư thể chính
+        shoulder_tilt = health_data.get("shoulder_tilt", 0)
+        head_pitch = health_data.get("head_pitch", 0)
+        head_yaw = health_data.get("head_yaw", 0)
+
+        self.sum_shoulder_tilt += abs(shoulder_tilt)    # Góc vai
+        self.sum_head_pitch += abs(head_pitch)          # Góc đầu trước-sau
+        self.sum_head_yaw += abs(head_yaw)              # Góc đầu trái-phải
 
         # Cập nhật các metrics khác
         self.total_records += 1
@@ -233,10 +245,10 @@ class HealthDataCollector:
 
     def _prepare_csv_row(self) -> Dict[str, Any]:
         """
-        Chuẩn bị data row cho CSV storage
+        Chuẩn bị data row cho CSV storage - OPTIMIZED for 3 key posture angles
 
         Returns:
-            Dict: Row data với tất cả metrics
+            Dict: Row data với health metrics focused (20 → 10 fields)
         """
         timestamp = time.time()
         datetime_str = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
@@ -244,7 +256,7 @@ class HealthDataCollector:
         # Lấy latest health data
         data = self._latest.copy()
 
-        # Prepare row with all metrics
+        # Prepare optimized row with focus on health metrics
         row = {
             "timestamp": timestamp,
             "datetime": datetime_str,
@@ -252,29 +264,21 @@ class HealthDataCollector:
             "frame_timestamp": data.get("timestamp", timestamp),
             "processing_time_ms": data.get("proc_ms", 0),
 
-            # Eye metrics
-            "left_ear": data.get("left_ear"),
-            "right_ear": data.get("right_ear"),
+            # Eye Health (optimized - only essential metrics)
             "avg_ear": data.get("avg_ear"),
-            "left_contrast": data.get("left_contrast"),
-            "right_contrast": data.get("right_contrast"),
-            "avg_contrast": data.get("avg_contrast"),
 
-            # Head/Posture metrics
-            "head_pitch": data.get("head_pitch"),
-            "head_yaw": data.get("head_yaw"),
-            "head_roll": data.get("head_roll"),
-            "shoulder_tilt": data.get("shoulder_tilt"),
+            # Ergonomics
             "distance_cm": data.get("distance_cm"),
 
-            # Detection results
+            # Focus: 3 key posture angles
+            "shoulder_tilt": data.get("shoulder_tilt"),        # Góc vai
+            "head_pitch": data.get("head_pitch"),             # Góc đầu trước-sau
+            "head_yaw": data.get("head_yaw"),                 # Góc đầu trái-phải
+
+            # Detection results (essential only)
             "blink_detected": data.get("blink_detected", False),
             "drowsiness_detected": data.get("drowsiness_detected", False),
             "posture_good": data.get("posture_good", True),
-
-            # Gaze information
-            "gaze_x": data.get("gaze_point", [None, None])[0],
-            "gaze_y": data.get("gaze_point", [None, None])[1],
         }
 
         # Remove None values to keep CSV clean
@@ -312,9 +316,11 @@ class HealthDataCollector:
                 # Drowsiness statistics
                 "drowsiness_events": self.drowsiness_count,
 
-                # Average metrics
+                # Average metrics - Focus on 3 key posture angles
                 "avg_distance_cm": self.sum_dist / self.total_records if self.total_records > 0 else 0,
-                "avg_head_tilt_deg": self.sum_head_tilt / self.total_records if self.total_records > 0 else 0,
+                "avg_shoulder_tilt_deg": self.sum_shoulder_tilt / self.total_records if self.total_records > 0 else 0,  # Góc vai
+                "avg_head_pitch_deg": self.sum_head_pitch / self.total_records if self.total_records > 0 else 0,     # Góc đầu trước-sau
+                "avg_head_yaw_deg": self.sum_head_yaw / self.total_records if self.total_records > 0 else 0,         # Góc đầu trái-phải
 
                 # File information
                 "realtime_file": str(self.rt_csv_path) if self.rt_csv_path else None,

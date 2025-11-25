@@ -164,14 +164,24 @@ class AEyeProVisionApp:
         # Summary CSV file (1 record per session)
         self.summary_csv_file = self.session_dir / "summary.csv"
 
-        # Initialize session CSV with comprehensive headers
+        # Initialize session CSV with optimized health-focused headers (18 → 9 fields)
         session_headers = [
+            # Identification
             'timestamp', 'session_id', 'time_elapsed',
-            'left_ear', 'right_ear', 'avg_ear', 'blink_count', 'blink_rate',
-            'distance_cm', 'gaze_x', 'gaze_y',
-            'head_side_angle', 'head_updown_angle', 'head_roll', 'shoulder_tilt',
-            'posture_status', 'drowsiness_detected', 'ear_duration',
-            'posture_duration', 'gaze_duration', 'eye_fatigue_level'
+
+            # Eye Health (optimized)
+            'avg_ear', 'blink_count', 'blink_rate',
+
+            # Ergonomics
+            'distance_cm',
+
+            # Focus: 3 key posture angles
+            'shoulder_tilt',        # Góc vai
+            'head_pitch',           # Góc đầu trước-sau (head_updown_angle)
+            'head_yaw',             # Góc đầu trái-phải (head_side_angle)
+
+            # Status
+            'posture_status', 'drowsiness_detected', 'eye_fatigue_level'
         ]
 
         # Create session CSV file with headers
@@ -182,8 +192,9 @@ class AEyeProVisionApp:
             summary_headers = [
                 'session_id', 'start_time', 'end_time', 'duration_minutes',
                 'total_blinks', 'avg_blink_rate', 'avg_ear', 'avg_distance_cm',
-                'drowsiness_events', 'posture_alerts', 'bad_posture_percentage',
-                'eye_fatigue_percentage', 'total_frames', 'fps_avg', 'success_rate'
+                'drowsiness_events', 'posture_alerts', 'eye_fatigue_percentage',
+                # Add 3 key posture angles to summary
+                'avg_shoulder_tilt', 'avg_head_pitch', 'avg_head_yaw'
             ]
             append_csv_row({h: None for h in summary_headers}, self.summary_csv_file, summary_headers)
 
@@ -317,43 +328,52 @@ class AEyeProVisionApp:
         posture_data = frame_result.get('posture_data', {})
         drowsy_data = frame_result.get('drowsy_data', {})
 
-        # Create comprehensive row for session CSV
+        # Create optimized health-focused row for session CSV (18 → 9 fields)
         session_row = {
+            # Identification
             'timestamp': timestamp,
             'session_id': self.session_id,
             'time_elapsed': round(elapsed, 2),
 
-            # Eye tracking data
-            'left_ear': round(eye_data.get('left_ear', 0), 4),
-            'right_ear': round(eye_data.get('right_ear', 0), 4),
+            # Eye Health (optimized - only avg_ear needed)
             'avg_ear': round(eye_data.get('avg_ear', 0), 4),
             'blink_count': self.stats['total_blinks'],
             'blink_rate': round(self.stats['total_blinks'] / max(elapsed/60, 0.1), 2),
 
-            # Distance and gaze data
+            # Ergonomics
             'distance_cm': round(eye_data.get('distance_cm', posture_data.get('eye_distance_cm', 0)), 2),
-            'gaze_x': round(eye_data.get('gaze_point', [0, 0])[0], 2) if eye_data.get('gaze_point') else None,
-            'gaze_y': round(eye_data.get('gaze_point', [0, 0])[1], 2) if eye_data.get('gaze_point') else None,
 
-            # Posture data
-            'head_side_angle': round(posture_data.get('head_side_angle', 0), 2),
-            'head_updown_angle': round(posture_data.get('head_updown_angle', 0), 2),
-            'head_roll': round(posture_data.get('head_roll', 0), 2),
-            'shoulder_tilt': round(posture_data.get('shoulder_tilt', 0), 2),
+            # Focus: 3 key posture angles
+            'shoulder_tilt': round(posture_data.get('shoulder_tilt', 0), 2),        # Góc vai
+            'head_pitch': round(posture_data.get('head_updown_angle', 0), 2),       # Góc đầu trước-sau
+            'head_yaw': round(posture_data.get('head_side_angle', 0), 2),          # Góc đầu trái-phải
+
+            # Status
             'posture_status': posture_data.get('status', 'unknown'),
-
-            # Drowsiness data
             'drowsiness_detected': drowsy_data.get('drowsiness_detected', False),
-            'ear_duration': round(drowsy_data.get('ear_duration', 0), 2),
-            'posture_duration': round(drowsy_data.get('posture_bad_duration', 0), 2),
-            'gaze_duration': round(drowsy_data.get('gaze_off_duration', 0), 2),
-
-            # Eye fatigue level
             'eye_fatigue_level': self._calculate_eye_fatigue_level(eye_data)
         }
 
         # Save to session CSV
         append_csv_row(session_row, self.session_csv_file)
+
+        # Update health collector with optimized data
+        if self.health_collector:
+            # Prepare optimized health data for collector
+            health_data = {
+                'timestamp': current_time,
+                'avg_ear': eye_data.get('avg_ear'),
+                'distance_cm': eye_data.get('distance_cm', posture_data.get('eye_distance_cm')),
+                'blink_detected': blink_data.get('blink_detected', False),
+                'drowsiness_detected': drowsy_data.get('drowsiness_detected', False),
+                'posture_good': posture_data.get('status') == 'good',
+                # Focus: 3 key posture angles
+                'shoulder_tilt': posture_data.get('shoulder_tilt'),
+                'head_pitch': posture_data.get('head_updown_angle'),   # Góc đầu trước-sau
+                'head_yaw': posture_data.get('head_side_angle'),       # Góc đầu trái-phải
+                'proc_ms': frame_result.get('processing_time_ms', 0)
+            }
+            self.health_collector.update_health_data(health_data)
 
     def _calculate_eye_fatigue_level(self, eye_data: Dict[str, Any]) -> str:
         """
@@ -1913,6 +1933,11 @@ class AEyeProVisionApp:
 
         # Setup session logging
         session_id = self.setup_session_logging()
+
+        # Start health data collection
+        if self.health_collector:
+            self.health_collector.start_collection()
+            print(f"[OK] Health data collection started for session: {session_id}")
 
         # Start application
         self.start_time = time.time()
