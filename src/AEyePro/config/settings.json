@@ -1,0 +1,35 @@
+{
+  "health_monitoring": {
+    "min_detection_confidence": 0.8,
+    "min_tracking_confidence": 0.8,
+    "pose_detection_confidence": 0.8,
+    "pose_tracking_confidence": 0.8,
+    "frame_rate": 30,
+    "camera_index": 0,
+    "LEFT_EYE": [33, 160, 158, 133, 144, 153],
+    "RIGHT_EYE": [362, 385, 387, 263, 373, 380],
+    "BLINK_THRESHOLD": 0.27,
+    "DROWSY_THRESHOLD": 0.27,
+    "consecutive_frames": 3,
+    "max_blink_duration": 0.5,
+    "min_blink_interval": 0.1,
+    "camera_focal_length": 600,
+    "AVERAGE_EYE_DISTANCE_CM": 6.3,
+    "MIN_EYE_PIXEL_DISTANCE": 30,
+    "MIN_REASONABLE_DISTANCE": 50,
+    "MAX_REASONABLE_DISTANCE": 80,
+    "EPSILON": 1e-7,
+    "max_head_updown_angle": 22,
+    "max_head_side_angle": 20,
+    "max_shoulder_tilt": 15,
+    "session_duration_threshold": 3600,
+    "data_retention_days": 7,
+    "drowsy_ear_duration": 3.0
+  },
+  "ui_settings": {
+    "theme": "dark",
+    "language": "vi",
+    "enable_notifications": true,
+    "auto_refresh_interval": 30
+  }
+}
