@@ -2,8 +2,7 @@
 
 ## 📋 Giới Thiệu
 
-AEyePro là hệ thống theo dõi sức khỏe sử dụng Computer Vision, tập trung vào 3 góc tư thế chính:
-
+AEyePro là hệ thống theo dõi sức khỏe sử dụng Computer Vision với các tính năng chính:
 - **Eye Tracking**: Theo dõi mắt với MediaPipe Face Mesh (468 landmarks)
 - **Posture Analysis**: Phân tích tư thế ngồi với 3 góc chính (vai, đầu trước-sau, đầu trái-phải)
 - **Blink Detection**: Phát hiện và phân tích chớp mắt dựa trên EAR
@@ -12,16 +11,16 @@ AEyePro là hệ thống theo dõi sức khỏe sử dụng Computer Vision, t�
 
 ## 🚀 Cài Đặt
 
-### 1. Yêu Cầu Hệ Thống
+### Yêu Cầu Hệ Thống
 - Python 3.8+
 - Camera webcam
 
-### 2. Cài Đặt Dependencies
+### Cài Đặt Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Kiểm Tra Cài Đặt
+### Kiểm Tra Cài Đặt
 ```bash
 python main.py
 ```
@@ -36,11 +35,11 @@ python vision_app.py
 
 ---
 
-# 🔧 GUI Integration Guide
+# 🔧 GUI Integration API
 
 ## 📱 Build Custom GUI với PyQt6/CustomTkinter
 
-Hướng dẫn này giúp bạn xây dựng giao diện đồ họa tùy chỉnh sử dụng core modules của AEyePro.
+Dưới đây là danh sách các hàm cần thiết để tích hợp AEyePro vào giao diện đồ họa.
 
 ## 🏗️ Architecture Overview
 
@@ -52,580 +51,377 @@ GUI Application
 │   ├── EyeTracker
 │   ├── PostureAnalyzer
 │   ├── BlinkDetector
+│   ├── DrowsinessDetector
 │   └── HealthDataCollector
 └── Data Storage (CSV files)
 ```
 
-## 🔑 Core Classes and Methods
+---
 
-### 1. AEyeProVisionApp (Main Class)
+# Module 1: Eye Tracker (`vision/eye_tracker.py`)
+
+## Class: `EyeTracker`
+**Mục đích**: Theo dõi và phân tích đặc điểm mắt sử dụng MediaPipe Face Mesh (468 landmarks)
+
+### Initialization Methods
+```python
+def __init__(self, config_path: str | Path = "settings.json")
+```
+- **Chức năng**: Khởi tạo MediaPipe Face Mesh, thiết lập camera
+- **Tham số**: `config_path` - Đường dẫn file cấu hình
+- **GUI Usage**: Gọi một lần khi khởi tạo ứng dụng
+
+### Control Methods
+```python
+def start() -> None
+```
+- **Chức năng**: Bắt đầu camera và thread xử lý eye tracking
+- **GUI Usage**: Gọi để bắt đầu capturing và processing video frames
 
 ```python
-from vision_app import AEyeProVisionApp
-
-# Initialize ứng dụng
-app = AEyeProVisionApp(
-    config_file="settings.json",
-    show_camera=False  # Disable OpenCV display for GUI
-)
+def stop() -> None
 ```
+- **Chức năng**: Dừng tracking và giải phóng resources camera
+- **GUI Usage**: Gọi khi dừng monitoring hoặc shutdown ứng dụng
 
-#### **Essential Methods:**
+### Data Access Methods
+```python
+def get_frame() -> Optional[np.ndarray]
+```
+- **Chức năng**: Lấy frame camera hiện tại từ buffer (thread-safe)
+- **GUI Usage**: Sử dụng để hiển thị video feed trong GUI
 
 ```python
-# Khởi tạo modules
-success = app.initialize_modules()
-if not success:
-    print("Failed to initialize modules")
-    return
-
-# Thiết lập logging
-session_id = app.setup_session_logging()
-
-# Xử lý một frame
-frame_result = app.process_frame()
-
-# Cập nhật thống kê
-app.update_statistics(frame_result)
-
-# Lưu data (gọi mỗi giây)
-app.save_frame_data(frame_result, frame_count)
-
-# Lấy dữ liệu realtime
-latest_eye_data = app.eye_tracker.get_latest()
-latest_posture_data = app.posture_analyzer.get_latest()
+def get_latest() -> Dict[str, Any]
 ```
+- **Chức năng**: Lấy kết quả processing mới nhất với thread safety
+- **Trả về**: Dictionary với các keys:
+  - `frame`: Frame đã xử lý
+  - `left_eye`, `right_eye`: Tọa độ 6 điểm mắt
+  - `gaze_point`: Điểm nhìn trên màn hình (x, y)
+  - `left_ear`, `right_ear`: Eye Aspect Ratio cho mỗi mắt
+  - `avg_ear`: EAR trung bình
+  - `distance_cm`: Khoảng cách đến camera
+- **GUI Usage**: Gọi thường xuyên để lấy data eye tracking cho display
 
-### 2. Eye Tracking Data
+### Calibration Method
+```python
+def calibrate_ear_thresholds(self, calibration_duration: float = 10.0) -> dict[str, Any]
+```
+- **Chức năng**: Calibrate tự động ngưỡng EAR cho người dùng cụ thể
+- **Tham số**: `calibration_duration` - Thời gian calibrate (giây)
+- **GUI Usage**: Gọi khi user muốn cá nhân hóa settings
+
+---
+
+# Module 2: Posture Analyzer (`vision/posture_analyzer.py`)
+
+## Class: `PostureAnalyzer`
+**Mục đích**: Phân tích tư thế ngồi sử dụng MediaPipe Pose (33 landmarks)
+
+### Initialization Methods
+```python
+def __init__(self, config_path: str = "settings.json")
+```
+- **Chức năng**: Khởi tạo MediaPipe Pose với 33 landmarks, thiết lập filters
+- **GUI Usage**: Gọi một lần khi khởi tạo ứng dụng
+
+### Analysis Methods
+```python
+def analyze(self, frame: np.ndarray) -> Dict[str, Any]
+```
+- **Chức năng**: Phân tích tư thế từ frame video đầu vào
+- **Tham số**: `frame` - Input image frame
+- **Trả về**: Dictionary với các keys:
+  - `head_side_angle`: Góc quay ngang đầu (-180 đến 180)
+  - `head_updown_angle`: Góc nghiêng lên/xuống (-180 đến 180)
+  - `shoulder_tilt`: Góc nghiêng vai (-180 đến 180)
+  - `eye_distance_cm`: Khoảng cách ước tính đến camera
+  - `status`: 'good', 'poor', hoặc 'unknown'
+- **GUI Usage**: Gọi với frame hiện tại để lấy data posture
 
 ```python
-# Lấy eye tracking data
-eye_data = app.eye_tracker.get_latest()
-
-if eye_data:
-    print(f"EAR: {eye_data['avg_ear']:.3f}")
-    print(f"Distance: {eye_data['distance_cm']:.1f}cm")
-    print(f"Blinks: {eye_data.get('blink_count', 0)}")
-    print(f"Left Eye EAR: {eye_data.get('left_ear', 0):.3f}")
-    print(f"Right Eye EAR: {eye_data.get('right_ear', 0):.3f}")
+def get_latest() -> Dict[str, Any]
 ```
+- **Chức năng**: Lấy kết quả phân tích posture mới nhất
+- **GUI Usage**: Gọi để lấy current posture status cho display
 
-### 3. Posture Analysis Data
+### Cleanup Methods
+```python
+def close() -> None
+```
+- **Chức năng**: Đóng MediaPipe resources và cleanup
+- **GUI Usage**: Gọi khi shutdown ứng dụng
+
+---
+
+# Module 3: Blink Detector (`vision/blink_detector.py`)
+
+## Class: `BlinkDetector`
+**Mục đích**: Phát hiện và phân tích chớp mắt sử dụng thuật toán EAR-based
+
+### Initialization Methods
+```python
+def __init__(self, config_path: str = "settings.json", eye_tracker: Optional[EyeTracker] = None)
+```
+- **Chức năng**: Khởi tạo blink detection system với EAR thresholds
+- **Tham số**: `config_path` - File config, `eye_tracker` - EyeTracker instance
+- **GUI Usage**: Gọi một lần với EyeTracker instance
+
+### Update Methods
+```python
+def update() -> dict[str, Any]
+```
+- **Chức năng**: Cập nhật blink detection và phân tích trạng thái hiện tại
+- **Trả về**: Dictionary với các keys:
+  - `blink_detected`: Boolean detect được blink
+  - `total_blinks`: Tổng số blink trong session
+  - `blink_rate_per_minute`: Tần suất blink (blink/phút)
+  - `avg_blink_duration`: Thời lượng blink trung bình
+- **GUI Usage**: Gọi thường xuyên trong main loop để check blink events
+
+### Statistics Methods
+```python
+def get_statistics() -> dict[str, Any]
+```
+- **Chức năng**: Lấy thống kê chi tiết về blink
+- **GUI Usage**: Gọi để hiển thị comprehensive blink statistics
 
 ```python
-# Lấy posture analysis data
-posture_data = app.posture_analyzer.get_latest()
-
-if posture_data:
-    print(f"Shoulder Tilt: {posture_data.get('shoulder_tilt', 0):.1f}°")
-    print(f"Head Pitch (trước-sau): {posture_data.get('head_updown_angle', 0):.1f}°")
-    print(f"Head Yaw (trái-phải): {posture_data.get('head_side_angle', 0):.1f}°")
-    print(f"Posture Status: {posture_data.get('status', 'unknown')}")
+def reset_statistics() -> None
 ```
+- **Chức năng**: Reset tất cả thống kê cho session mới
+- **GUI Usage**: Gọi khi bắt đầu monitoring session mới
 
-### 4. Blink Detection Data
+---
+
+# Module 4: Drowsiness Detector (`vision/drowsiness_detector.py`)
+
+## Class: `DrowsinessDetector`
+**Mục đích**: Phát hiện buồn ngủ sử dụng multi-signal analysis
+
+### Initialization Methods
+```python
+def __init__(self, config_path: str = "settings.json")
+```
+- **Chức năng**: Khởi tạo multi-signal drowsiness detection với timers
+- **GUI Usage**: Gọi một lần khi khởi tạo ứng dụng
+
+### Update Methods
+```python
+def update(self, ear: Optional[float] = None, posture_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]
+```
+- **Chức năng**: Cập nhật drowsiness detection với data mới nhất
+- **Tham số**: `ear` - Eye Aspect Ratio, `posture_data` - Kết quả posture analysis
+- **Trả về**: Dictionary với các keys:
+  - `drowsiness_detected`: Boolean detect được buồn ngủ
+  - `reason`: Lý do detection ('ear_low', 'posture_bad', 'gaze_off')
+  - `ear_duration`: Thời gian EAR thấp (giây)
+  - `posture_bad_duration`: Thời gian posture kém (giây)
+- **GUI Usage**: Gọi trong main loop để check drowsiness
+
+### State Methods
+```python
+def is_drowsy() -> bool
+```
+- **Chức năng**: Kiểm tra trạng thái drowsiness hiện tại
+- **GUI Usage**: Gọi để quick check trạng thái buồn ngủ
 
 ```python
-# Lấy blink detection data
-blink_data = app.blink_detector.update()
-
-print(f"Blink Detected: {blink_data.get('blink_detected', False)}")
-print(f"Blink Rate: {app.stats['total_blinks'] / max(elapsed/60, 0.1):.1f}/min")
+def reset() -> None
 ```
+- **Chức năng**: Reset tất cả internal state và timers
+- **GUI Usage**: Gọi khi bắt đầu session mới
 
-### 5. Drowsiness Detection Data
+---
+
+# Module 5: Health Data Collector (`vision/health_data_collector.py`)
+
+## Class: `HealthDataCollector`
+**Mục đích**: Thu thập và lưu trữ dữ liệu sức khỏe tự động vào CSV files
+
+### Initialization Methods
+```python
+def __init__(self, collect_interval: float = 1.0, config_path: str = "settings.json", executor: Optional[ExecutorService] = None)
+```
+- **Chức năng**: Khởi tạo automated health data collection với thread-safe storage
+- **Tham số**: `collect_interval` - Interval thu thập data (giây)
+- **GUI Usage**: Gọi một lần để enable automatic data logging
+
+### Control Methods
+```python
+def start_collection() -> None
+```
+- **Chức năng**: Bắt đầu automated data collection với background thread
+- **GUI Usage**: Gọi khi bắt đầu monitoring session
 
 ```python
-# Lấy drowsiness detection data
-drowsy_data = app.drowsiness_detector.update(
-    ear=eye_data.get('avg_ear'),
-    posture_data=posture_data
-)
-
-print(f"Drowsiness Detected: {drowsy_data.get('drowsiness_detected', False)}")
-print(f"Reason: {drowsy_data.get('reason', 'Unknown')}")
-print(f"EAR Low Duration: {drowsy_data.get('ear_duration', 0):.1f}s")
+def stop_collection() -> None
 ```
+- **Chức năng**: Dừng data collection và lưu session summary
+- **GUI Usage**: Gọi khi kết thúc monitoring session
 
-## 🎨 PyQt6 Integration Example
+### Data Update Methods
+```python
+def update_health_data(self, health_data: Dict[str, Any]) -> None
+```
+- **Chức năng**: Cập nhật health data cho automatic logging (optimized 9 fields)
+- **Tham số**: `health_data` - Dictionary với health metrics:
+  - `timestamp`, `avg_ear`, `distance_cm`
+  - `shoulder_tilt`, `head_pitch`, `head_yaw`
+  - `drowsiness_detected`, `posture_status`
+- **GUI Usage**: Gọi với consolidated health data từ tất cả modules
+
+### Statistics Methods
+```python
+def get_current_stats() -> Dict[str, Any]
+```
+- **Chức năng**: Lấy thống kê session hiện tại
+- **GUI Usage**: Gọi để hiển thị current session statistics
+
+---
+
+# Module 6: Main Application (`vision_app.py`)
+
+## Class: `AEyeProVisionApp`
+**Mục đích**: Main application class tích hợp tất cả vision modules
+
+### Initialization Methods
+```python
+def __init__(self, config_file: str = "settings.json", show_camera: bool = True)
+```
+- **Chức năng**: Khởi tạo complete vision system với tất cả modules
+- **Tham số**: `config_file` - Configuration file path, `show_camera` - Enable camera display
+- **GUI Usage**: Gọi một lần để tạo main application instance
+
+### Module Management Methods
+```python
+def initialize_modules() -> bool
+```
+- **Chức năng**: Khởi tạo tất cả vision modules (EyeTracker, PostureAnalyzer, etc.)
+- **GUI Usage**: Gọi trước khi bắt đầu main application loop
+
+### Processing Methods
+```python
+def process_frame() -> Dict[str, Any]
+```
+- **Chức năng**: Xử lý một camera frame qua tất cả modules
+- **Trả về**: Dictionary với kết quả từ tất cả modules:
+  - `eye_data`: Dữ liệu từ EyeTracker
+  - `posture_data`: Dữ liệu từ PostureAnalyzer
+  - `blink_data`: Dữ liệu từ BlinkDetector
+  - `drowsy_data`: Dữ liệu từ DrowsinessDetector
+- **GUI Usage**: Gọi trong main loop để frame processing
 
 ```python
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
-from PyQt6.QtCore import QTimer, pyqtSignal
-from PyQt6.QtGui import QFont
-import cv2
-import numpy as np
-from vision_app import AEyeProVisionApp
-
-class AEyeProGUI(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("AEyePro - Health Monitoring")
-        self.setGeometry(100, 100, 800, 600)
-
-        # Initialize AEyePro
-        self.aeye_app = AEyeProVisionApp(show_camera=False)
-
-        # Setup UI
-        self.setup_ui()
-
-        # Setup timer for real-time updates
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_health_data)
-        self.timer.start(33)  # ~30 FPS
-
-    def setup_ui(self):
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-
-        layout = QVBoxLayout()
-
-        # Health metrics labels
-        self.ear_label = QLabel("EAR: --")
-        self.distance_label = QLabel("Distance: --")
-        self.blink_rate_label = QLabel("Blink Rate: --")
-        self.posture_status_label = QLabel("Posture: --")
-        self.drowsiness_label = QLabel("Status: --")
-
-        # Posture angles labels (3 key angles)
-        self.shoulder_tilt_label = QLabel("Shoulder Tilt: --")
-        self.head_pitch_label = QLabel("Head Pitch: --")
-        self.head_yaw_label = QLabel("Head Yaw: --")
-
-        # Camera feed label
-        self.camera_label = QLabel("Camera Feed")
-        self.camera_label.setMinimumSize(640, 480)
-
-        # Add to layout
-        layout.addWidget(self.ear_label)
-        layout.addWidget(self.distance_label)
-        layout.addWidget(self.blink_rate_label)
-        layout.addWidget(QLabel("\n--- POSTURE ANALYSIS ---"))
-        layout.addWidget(self.shoulder_tilt_label)
-        layout.addWidget(self.head_pitch_label)
-        layout.addWidget(self.head_yaw_label)
-        layout.addWidget(self.posture_status_label)
-        layout.addWidget(QLabel("\n--- ALERT STATUS ---"))
-        layout.addWidget(self.drowsiness_label)
-        layout.addWidget(self.camera_label)
-
-        central_widget.setLayout(layout)
-
-        # Initialize AEyePro modules
-        if self.aeye_app.initialize_modules():
-            self.aeye_app.setup_session_logging()
-            print("AEyePro initialized successfully")
-        else:
-            print("Failed to initialize AEyePro")
-
-    def update_health_data(self):
-        """Update health data every frame"""
-        try:
-            # Process frame
-            frame_result = self.aeye_app.process_frame()
-
-            if 'error' not in frame_result:
-                # Update statistics
-                self.aeye_app.update_statistics(frame_result)
-
-                # Save data (every second - controlled internally)
-                self.aeye_app.save_frame_data(frame_result, 0)
-
-                # Update UI with latest data
-                self.update_ui_display(frame_result)
-
-                # Update camera feed
-                self.update_camera_feed()
-
-        except Exception as e:
-            print(f"Error updating health data: {e}")
-
-    def update_ui_display(self, frame_result):
-        """Update UI labels with latest data"""
-        # Get latest data
-        eye_data = frame_result.get('eye_data', {})
-        posture_data = frame_result.get('posture_data', {})
-        drowsy_data = frame_result.get('drowsy_data', {})
-
-        # Update eye metrics
-        if eye_data:
-            ear = eye_data.get('avg_ear', 0)
-            distance = eye_data.get('distance_cm', 0)
-
-            # Color coding for EAR
-            ear_color = "green" if ear > 0.25 else "orange" if ear > 0.2 else "red"
-
-            self.ear_label.setText(f"EAR: <span style='color: {ear_color}'>{ear:.3f}</span>")
-            self.distance_label.setText(f"Distance: {distance:.1f}cm")
-
-        # Update blink rate
-        elapsed = time.time() - self.aeye_app.start_time if self.aeye_app.start_time else 1
-        blink_rate = self.aeye_app.stats['total_blinks'] / max(elapsed/60, 0.1)
-        self.blink_rate_label.setText(f"Blink Rate: {blink_rate:.1f}/min")
-
-        # Update posture (3 key angles)
-        if posture_data:
-            shoulder_tilt = posture_data.get('shoulder_tilt', 0)
-            head_pitch = posture_data.get('head_updown_angle', 0)
-            head_yaw = posture_data.get('head_side_angle', 0)
-            posture_status = posture_data.get('status', 'unknown')
-
-            # Color coding for posture
-            posture_color = "green" if posture_status == 'good' else "orange" if posture_status == 'unknown' else "red"
-
-            self.shoulder_tilt_label.setText(f"Shoulder Tilt: {shoulder_tilt:.1f}°")
-            self.head_pitch_label.setText(f"Head Pitch: {head_pitch:.1f}°")
-            self.head_yaw_label.setText(f"Head Yaw: {head_yaw:.1f}°")
-            self.posture_status_label.setText(f"Posture: <span style='color: {posture_color}'>{posture_status.upper()}</span>")
-
-        # Update drowsiness status
-        if drowsy_data.get('drowsiness_detected'):
-            self.drowsiness_label.setText("<span style='color: red'>⚠ DROWSINESS DETECTED!</span>")
-        else:
-            self.drowsiness_label.setText("<span style='color: green'>✅ AWAKE & ALERT</span>")
-
-    def update_camera_feed(self):
-        """Update camera display"""
-        try:
-            frame = self.aeye_app.eye_tracker.get_frame()
-            if frame is not None:
-                # Convert frame to RGB for PyQt6
-                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                h, w, ch = rgb_image.shape
-                bytes_per_line = ch * w
-                qt_image = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-
-                # Scale and display
-                pixmap = QtGui.QPixmap.fromImage(qt_image)
-                scaled_pixmap = pixmap.scaled(640, 480, Qt.AspectRatioMode.KeepAspectRatio)
-                self.camera_label.setPixmap(scaled_pixmap)
-        except Exception as e:
-            print(f"Error updating camera feed: {e}")
-
-    def closeEvent(self, event):
-        """Handle application close"""
-        self.aeye_app.shutdown()
-        event.accept()
-
-def main():
-    app = QApplication(sys.argv)
-    window = AEyeProGUI()
-    window.show()
-    sys.exit(app.exec())
-
-if __name__ == "__main__":
-    main()
+def display_camera_feed(self, frame_result: Dict[str, Any])
 ```
+- **Chức năng**: Hiển thị camera feed với comprehensive UI overlay
+- **GUI Usage**: Gọi để hiển thị main monitoring interface
 
-## 🎨 CustomTkinter Integration Example
+### Session Management Methods
+```python
+def setup_session_logging(self)
+```
+- **Chức năng**: Thiết lập session logging và data storage
+- **Trả về**: Session ID string
+- **GUI Usage**: Gọi khi bắt đầu mới session
 
 ```python
-import customtkinter as ctk
-import cv2
-import numpy as np
-from PIL import Image, ImageTk
-from vision_app import AEyeProVisionApp
-
-class AEyeProCustomTkinterApp:
-    def __init__(self):
-        # Setup CustomTkinter
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")
-
-        self.root = ctk.CTk()
-        self.root.title("AEyePro - Health Monitoring")
-        self.root.geometry("1000x700")
-
-        # Initialize AEyePro
-        self.aeye_app = AEyeProVisionApp(show_camera=False)
-
-        # Setup UI
-        self.setup_ui()
-
-        # Initialize AEyePro
-        if self.aeye_app.initialize_modules():
-            self.aeye_app.setup_session_logging()
-            print("AEyePro initialized successfully")
-
-            # Start update loop
-            self.update_loop()
-        else:
-            print("Failed to initialize AEyePro")
-
-    def setup_ui(self):
-        # Main container
-        main_frame = ctk.CTkFrame(self.root)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Left panel - Health metrics
-        left_panel = ctk.CTkFrame(main_frame)
-        left_panel.pack(side="left", fill="both", expand=True, padx=(0, 5))
-
-        # Title
-        title_label = ctk.CTkLabel(left_panel, text="AEyePro Health Monitor",
-                                   font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(pady=10)
-
-        # Eye health frame
-        eye_frame = ctk.CTkFrame(left_panel)
-        eye_frame.pack(fill="x", padx=10, pady=5)
-
-        ctk.CTkLabel(eye_frame, text="👁️ EYE HEALTH", font=ctk.CTkFont(size=16, weight="bold")).pack()
-
-        self.ear_label = ctk.CTkLabel(eye_frame, text="EAR: --", font=ctk.CTkFont(size=14))
-        self.ear_label.pack()
-
-        self.blink_rate_label = ctk.CTkLabel(eye_frame, text="Blink Rate: --", font=ctk.CTkFont(size=14))
-        self.blink_rate_label.pack()
-
-        # Posture frame (3 key angles)
-        posture_frame = ctk.CTkFrame(left_panel)
-        posture_frame.pack(fill="x", padx=10, pady=5)
-
-        ctk.CTkLabel(posture_frame, text="🪑 POSTURE ANALYSIS", font=ctk.CTkFont(size=16, weight="bold")).pack()
-
-        self.shoulder_tilt_label = ctk.CTkLabel(posture_frame, text="Shoulder Tilt: --", font=ctk.CTkFont(size=14))
-        self.shoulder_tilt_label.pack()
-
-        self.head_pitch_label = ctk.CTkLabel(posture_frame, text="Head Pitch: --", font=ctk.CTkFont(size=14))
-        self.head_pitch_label.pack()
-
-        self.head_yaw_label = ctk.CTkLabel(posture_frame, text="Head Yaw: --", font=ctk.CTkFont(size=14))
-        self.head_yaw_label.pack()
-
-        self.posture_status_label = ctk.CTkLabel(posture_frame, text="Posture: --", font=ctk.CTkFont(size=14))
-        self.posture_status_label.pack()
-
-        # Status frame
-        status_frame = ctk.CTkFrame(left_panel)
-        status_frame.pack(fill="x", padx=10, pady=5)
-
-        ctk.CTkLabel(status_frame, text="📊 STATUS", font=ctk.CTkFont(size=16, weight="bold")).pack()
-
-        self.drowsiness_label = ctk.CTkLabel(status_frame, text="Status: Initializing...", font=ctk.CTkFont(size=14))
-        self.drowsiness_label.pack()
-
-        # Right panel - Camera feed
-        right_panel = ctk.CTkFrame(main_frame)
-        right_panel.pack(side="right", fill="both", expand=True, padx=(5, 0))
-
-        ctk.CTkLabel(right_panel, text="📷 Camera Feed", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=5)
-
-        self.camera_label = ctk.CTkLabel(right_panel, text="Camera initializing...")
-        self.camera_label.pack(expand=True, fill="both", padx=10, pady=5)
-
-    def update_loop(self):
-        """Main update loop"""
-        try:
-            # Process frame
-            frame_result = self.aeye_app.process_frame()
-
-            if 'error' not in frame_result:
-                # Update statistics
-                self.aeye_app.update_statistics(frame_result)
-
-                # Save data
-                self.aeye_app.save_frame_data(frame_result, 0)
-
-                # Update UI
-                self.update_health_display(frame_result)
-                self.update_camera_display()
-
-        except Exception as e:
-            print(f"Update loop error: {e}")
-
-        # Schedule next update (30 FPS)
-        self.root.after(33, self.update_loop)
-
-    def update_health_display(self, frame_result):
-        """Update health metrics display"""
-        eye_data = frame_result.get('eye_data', {})
-        posture_data = frame_result.get('posture_data', {})
-        drowsy_data = frame_result.get('drowsy_data', {})
-
-        # Update eye metrics
-        if eye_data:
-            ear = eye_data.get('avg_ear', 0)
-            distance = eye_data.get('distance_cm', 0)
-
-            # Color coding
-            ear_text = f"EAR: {ear:.3f}"
-            if ear > 0.25:
-                self.ear_label.configure(text=ear_text, text_color=("green", "white"))
-            elif ear > 0.2:
-                self.ear_label.configure(text=ear_text, text_color=("orange", "white"))
-            else:
-                self.ear_label.configure(text=ear_text, text_color=("red", "white"))
-
-            elapsed = time.time() - self.aeye_app.start_time if self.aeye_app.start_time else 1
-            blink_rate = self.aeye_app.stats['total_blinks'] / max(elapsed/60, 0.1)
-            self.blink_rate_label.configure(text=f"Blink Rate: {blink_rate:.1f}/min")
-
-        # Update posture (3 key angles)
-        if posture_data:
-            shoulder_tilt = posture_data.get('shoulder_tilt', 0)
-            head_pitch = posture_data.get('head_updown_angle', 0)
-            head_yaw = posture_data.get('head_side_angle', 0)
-            posture_status = posture_data.get('status', 'unknown')
-
-            self.shoulder_tilt_label.configure(text=f"Shoulder Tilt: {shoulder_tilt:.1f}°")
-            self.head_pitch_label.configure(text=f"Head Pitch: {head_pitch:.1f}°")
-            self.head_yaw_label.configure(text=f"Head Yaw: {head_yaw:.1f}°")
-
-            # Posture status color
-            if posture_status == 'good':
-                self.posture_status_label.configure(text="Posture: GOOD", text_color=("green", "white"))
-            elif posture_status == 'poor':
-                self.posture_status_label.configure(text="Posture: POOR", text_color=("red", "white"))
-            else:
-                self.posture_status_label.configure(text="Posture: UNKNOWN", text_color=("orange", "white"))
-
-        # Update drowsiness
-        if drowsy_data.get('drowsiness_detected'):
-            self.drowsiness_label.configure(text="⚠ DROWSINESS DETECTED!", text_color=("red", "white"))
-        else:
-            self.drowsiness_label.configure(text="✅ AWAKE & ALERT", text_color=("green", "white"))
-
-    def update_camera_display(self):
-        """Update camera feed"""
-        try:
-            frame = self.aeye_app.eye_tracker.get_frame()
-            if frame is not None:
-                # Convert BGR to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                # Convert to PIL Image
-                image = Image.fromarray(frame_rgb)
-
-                # Convert to ImageTk
-                image_tk = ImageTk.PhotoImage(image)
-
-                # Update label
-                self.camera_label.configure(image=image_tk)
-                self.camera_label.image = image_tk  # Keep a reference
-
-        except Exception as e:
-            print(f"Camera display error: {e}")
-
-    def run(self):
-        """Run the application"""
-        try:
-            self.root.mainloop()
-        finally:
-            self.aeye_app.shutdown()
-
-def main():
-    app = AEyeProCustomTkinterApp()
-    app.run()
-
-if __name__ == "__main__":
-    main()
+def save_session_summary(self)
 ```
+- **Chức năng**: Lưu session summary vào CSV file
+- **GUI Usage**: Gọi khi kết thúc session để lưu results
 
-## 🔧 Key Integration Points
-
-### 1. Camera Access
+### Statistics Methods
 ```python
-# Get raw camera frame
-frame = app.eye_tracker.get_frame()
-
-# Get processed frame with landmarks
-eye_data = app.eye_tracker.get_latest()
+def update_statistics(self, frame_result: Dict[str, Any])
 ```
+- **Chức năng**: Cập nhật thống kê từ frame result
+- **GUI Usage**: Gọi sau mỗi processed frame
 
-### 2. Real-time Data Updates
+### Control Methods
 ```python
-# Process frame (call this in your GUI timer)
-frame_result = app.process_frame()
-
-# Update statistics
-app.update_statistics(frame_result)
-
-# Save data (automatic with 1-second intervals)
-app.save_frame_data(frame_result, frame_count)
+def shutdown(self)
 ```
+- **Chức năng**: Gracefully shutdown tất cả modules
+- **GUI Usage**: Gọi khi closing ứng dụng
 
-### 3. Health Metrics Access
+---
+
+# Module 7: Utilities (`utils/utils.py`)
+
+## Configuration Functions
 ```python
-# Get current statistics
-stats = app.stats
-
-# Get latest posture data
-posture_data = app.posture_analyzer.get_latest()
-
-# Get latest eye data
-eye_data = app.eye_tracker.get_latest()
-
-# Get blink data
-blink_data = app.blink_detector.update()
-
-# Get drowsiness data
-drowsy_data = app.drowsiness_detector.update(
-    ear=eye_data.get('avg_ear'),
-    posture_data=posture_data
-)
+def get_config(config_file='settings.json') -> Dict
 ```
+- **Chức năng**: Load configuration từ JSON file
+- **GUI Usage**: Gọi để load application settings
 
-### 4. Session Management
+## Data Storage Functions
 ```python
-# Start new session
-session_id = app.setup_session_logging()
-
-# Save session summary (called automatically on shutdown)
-app.save_session_summary()
-
-# Graceful shutdown
-app.shutdown()
+def append_csv_row(row_dict, file_path, fieldnames=None)
 ```
+- **Chức năng**: Append data row vào CSV file với thread safety
+- **GUI Usage**: Gọi cho custom data logging
 
-## 📊 Data Output
-
-### CSV Files Generated:
-- `health_YYYYMMDD_HHMMSS.csv` - Real-time health data (optimized 9 fields)
-- `summary.csv` - Session summaries with 3 key posture angles
-
-### Key Data Fields:
-- `timestamp`, `session_id`, `time_elapsed`
-- `avg_ear`, `blink_count`, `blink_rate`
-- `distance_cm`
-- `shoulder_tilt`, `head_pitch`, `head_yaw` (3 key angles)
-- `posture_status`, `drowsiness_detected`, `eye_fatigue_level`
-
-## 🚀 Getting Started
-
-1. **Install dependencies**:
-```bash
-pip install -r requirements.txt
-pip install PyQt6  # hoặc pip install customtkinter
+```python
+def save_data(data, file_path)
 ```
+- **Chức năng**: Save data vào JSON file với NumPy conversion
+- **GUI Usage**: Gọi để save complex data structures
 
-2. **Copy the example code** into your project
-
-3. **Run the GUI**:
-```bash
-python your_gui_app.py
+## Thread Management
+```python
+class ExecutorService
 ```
+- **Chức năng**: Thread pool cho concurrent operations
+- **GUI Usage**: Sử dụng cho background processing tasks
 
-4. **Customize** the UI according to your needs
+```python
+def submit(self, fn, *args, **kwargs)
+```
+- **Chức năng**: Submit function để thực hiện trong thread pool
+- **GUI Usage**: Sử dụng cho non-blocking operations
 
-## 🎯 Best Practices
+---
 
-1. **Performance**: Use QTimer with ~33ms interval (30 FPS)
-2. **Error Handling**: Wrap AEyePro calls in try-except blocks
-3. **Memory Management**: Call `app.shutdown()` when closing
-4. **Data Updates**: Don't call `save_frame_data()` manually (handled internally)
-5. **Camera**: Don't enable OpenCV display (`show_camera=False`) when using GUI
+# 🎯 GUI Integration Workflow
 
-## 📞 Troubleshooting
+## Basic Integration Steps:
+1. **Initialize**: `app = AEyeProVisionApp(show_camera=False)`
+2. **Setup Modules**: `app.initialize_modules()`
+3. **Start Session**: `app.setup_session_logging()`
+4. **Main Loop**:
+   - Process: `frame_result = app.process_frame()`
+   - Update Stats: `app.update_statistics(frame_result)`
+   - Save Data: `app.save_frame_data(frame_result, 0)`
+5. **Shutdown**: `app.shutdown()`
 
-- **Camera issues**: Check `camera_index` in `config/settings.json`
-- **Import errors**: Ensure all dependencies are installed
-- **Performance**: Reduce frame rate in config if GUI is laggy
-- **Memory usage**: Call `app.shutdown()` properly on exit
+## Individual Module Usage:
+1. **Eye Tracking**: `eye_tracker = EyeTracker()`
+2. **Posture Analysis**: `posture_analyzer = PostureAnalyzer()`
+3. **Blink Detection**: `blink_detector = BlinkDetector(eye_tracker)`
+4. **Data Collection**: `health_collector = HealthDataCollector()`
 
-## 🔗 Additional Resources
+---
 
-- [MediaPipe Documentation](https://google.github.io/mediapipe/)
-- [PyQt6 Documentation](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
-- [CustomTkinter Documentation](https://customtkinter.tomschimansky.com/)
+# 📞 Troubleshooting
+
+## Common Issues:
+1. **Camera issues**: Kiểm tra `camera_index` trong config (try 0, 1, 2, 3)
+2. **Import errors**: Đảm bảo Python 3.8+ và virtual environment được activate
+3. **Performance issues**: Giảm frame_rate trong config hoặc sử dụng GPU acceleration
+4. **Memory issues**: Gọi `shutdown()` properly on exit
+
+## Getting Help:
+- Kiểm tra console output cho error messages
+- Xem logs trong `data/` directory
+- Ensure all dependencies được cài đặt đúng version
+- Test với `python vision_app.py` trước khi custom GUI
+
+---
+
+**AEyePro Version**: 3.0.0
+**Python Requirements**: 3.8+
+**License**: Proprietary

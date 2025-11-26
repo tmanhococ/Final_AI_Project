@@ -10,7 +10,9 @@ Module này cung cấp các chức năng:
 """
 
 from __future__ import annotations
+
 import cv2
+import json
 import numpy as np
 import mediapipe as mp
 import threading
@@ -18,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 
-from utils import get_config, ExecutorService, save_data
+from utils import get_config, ExecutorService
 
 
 class EyeTracker:
@@ -339,8 +341,157 @@ class EyeTracker:
         if self._face_mesh:
             self._face_mesh.close()
 
+    def calibrate_ear_thresholds(self, calibration_duration: float = 10.0) -> dict[str, Any]:
+        """
+        Calibrate EAR thresholds tu dong cho tung nguoi dung trong 10 giay dau
+
+        Ham nay se:
+        1. Thu thap EAR data trong calibration_duration (mac dinh 10 giay)
+        2. Loai bo outliers (khi nhay mat)
+        3. Tinh baseline EAR (mean + std)
+        4. Update BLINK_THRESHOLD va DROWSY_THRESHOLD trong settings.json
+
+        Args:
+            calibration_duration: Thoi gian calibration (giay)
+
+        Returns:
+            Dict: Ket qua calibration voi thresholds moi
+        """
+        import json
+        from pathlib import Path
+
+        if not self._running:
+            print("Khoi tao eye tracker truoc...")
+            self.start()
+
+        print(f"Bat dau EAR calibration trong {calibration_duration} giay...")
+        print("Vui long nhin thang vao camera va nhem mat binh thuong")
+
+        # Thu thap EAR samples
+        ear_samples = []
+        start_time = time.time()
+        frame_count = 0
+
+        while time.time() - start_time < calibration_duration:
+            data = self.get_latest()
+            avg_ear = data.get("avg_ear")
+
+            if avg_ear is not None and avg_ear > 0:
+                ear_samples.append(avg_ear)
+                frame_count += 1
+
+            # Progress indicator
+            elapsed = time.time() - start_time
+            remaining = calibration_duration - elapsed
+            if frame_count % 10 == 0:
+                print(f"Dang calibrate... {remaining:.1f}s con lai, samples: {len(ear_samples)}")
+
+            time.sleep(0.033)  # ~30 FPS
+
+        if len(ear_samples) < 50:
+            return {
+                "success": False,
+                "error": f"Khong du samples ({len(ear_samples)} < 50). Vui long thu lai.",
+                "samples_collected": len(ear_samples)
+            }
+
+        # Chuyen doi thanh numpy array
+        ear_array = np.array(ear_samples)
+
+        # Loai bo outliers bang IQR method
+        q1 = np.percentile(ear_array, 25)
+        q3 = np.percentile(ear_array, 75)
+        iqr = q3 - q1
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
+
+        # Giu lai chi cac EAR "binh thuong" (khong nhay mat)
+        normal_ears = ear_array[(ear_array >= lower_bound) & (ear_array <= upper_bound)]
+
+        if len(normal_ears) < 30:
+            # Fallback: dung standard deviation rejection
+            mean_ear = np.mean(ear_array)
+            std_ear = np.std(ear_array)
+            normal_ears = ear_array[np.abs(ear_array - mean_ear) <= 2 * std_ear]
+
+        # Tinh statistics
+        baseline_mean = float(np.mean(normal_ears))
+        baseline_std = float(np.std(normal_ears))
+
+        # Tinh personalized thresholds
+        # BLINK_THRESHOLD: baseline_mean - 1.5*std (khi mat bat dau nhem)
+        personalized_blink_threshold = baseline_mean - (1.5 * baseline_std)
+
+        # DROWSY_THRESHOLD: baseline_mean - 0.8*std (khi mat bat dau met)
+        personalized_drowsy_threshold = baseline_mean - (0.8 * baseline_std)
+
+        # Dam bao thresholds trong khoang hop ly
+        personalized_blink_threshold = np.clip(personalized_blink_threshold, 0.15, 0.35)
+        personalized_drowsy_threshold = np.clip(personalized_drowsy_threshold, 0.20, 0.40)
+
+        # Dam bao drowsy threshold >= blink threshold
+        if personalized_drowsy_threshold < personalized_blink_threshold:
+            personalized_drowsy_threshold = personalized_blink_threshold + 0.03
+
+        # Update settings.json
+        config_path = Path(__file__).parent.parent / "config" / "settings.json"
+
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+
+            # Update thresholds
+            config["health_monitoring"]["BLINK_THRESHOLD"] = round(personalized_blink_threshold, 3)
+            config["health_monitoring"]["DROWSY_THRESHOLD"] = round(personalized_drowsy_threshold, 3)
+
+            # Add adaptive info
+            config["health_monitoring"]["adaptive_info"] = {
+                "calibrated": True,
+                "calibration_timestamp": time.time(),
+                "baseline_ear_mean": round(baseline_mean, 3),
+                "baseline_ear_std": round(baseline_std, 3),
+                "samples_used": len(normal_ears),
+                "samples_total": len(ear_samples)
+            }
+
+            # Save updated config
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2, ensure_ascii=False)
+
+            # Cap nhat internal config
+            self.cfg = config
+
+            print(f"Calibration hoan tat!")
+            print(f"   Baseline EAR: {baseline_mean:.3f} ± {baseline_std:.3f}")
+            print(f"   Blink Threshold: {personalized_blink_threshold:.3f}")
+            print(f"   Drowsy Threshold: {personalized_drowsy_threshold:.3f}")
+            print(f"   Samples su dung: {len(normal_ears)}/{len(ear_samples)}")
+
+            return {
+                "success": True,
+                "baseline_mean": baseline_mean,
+                "baseline_std": baseline_std,
+                "blink_threshold": personalized_blink_threshold,
+                "drowsy_threshold": personalized_drowsy_threshold,
+                "samples_used": len(normal_ears),
+                "samples_total": len(ear_samples),
+                "config_updated": True
+            }
+
+        except Exception as e:
+            print(f"Loi khi cap nhat config: {e}")
+            return {
+                "success": False,
+                "error": f"Khong the cap nhat config: {e}",
+                "baseline_mean": baseline_mean,
+                "baseline_std": baseline_std,
+                "blink_threshold": personalized_blink_threshold,
+                "drowsy_threshold": personalized_drowsy_threshold,
+                "config_updated": False
+            }
+
     def __del__(self):
         """
-        Destructor - đảm bảo cleanup
+        Destructor - dam bao cleanup
         """
         self.stop()

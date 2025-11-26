@@ -38,15 +38,13 @@ import sys
 import time
 import signal
 import threading
+import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
-import argparse
-
-import mediapipe
 
 # Add project root to path
-current_dir = Path(__file__).parent  # We're now at the root level
+current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
 try:
@@ -453,13 +451,89 @@ class AEyeProVisionApp:
             # Display the frame
             cv2.imshow(self.camera_window_name, display_frame)
 
-            # Check for window close (user clicks X or presses 'q')
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            # Check for keyboard input
+            key = cv2.waitKey(1) & 0xFF
+
+            # Close window
+            if key == ord('q'):
                 self.shutdown_requested = True
                 print("\n[STOPPED] Camera window closed")
 
+            # Calibration button - Press 'c' for calibrate
+            elif key == ord('c'):
+                print("\n[CALIBRATION] Starting EAR threshold calibration...")
+                self._run_calibration_process()
+
         except Exception as e:
             print(f"[WARNING] Camera display error: {e}")
+
+    def _run_calibration_process(self):
+        """
+        Run calibration process from within the application
+        """
+        try:
+            # Pause the main processing temporarily
+            original_running = self.running
+            self.running = False
+
+            print("\n" + "="*50)
+            print("ADAPTIVE CALIBRATION MODE")
+            print("="*50)
+            print("Instructions:")
+            print("1. Look straight at the camera")
+            print("2. Blink normally during calibration")
+            print("3. Keep normal facial expression")
+            print("4. Wait for calibration to complete")
+            print("="*50)
+
+            # Ask for duration
+            try:
+                import time
+                duration_input = input("\nCalibration duration (seconds, default=10): ").strip()
+                duration = float(duration_input) if duration_input else 10.0
+                duration = max(5.0, min(30.0, duration))  # Limit between 5-30 seconds
+                print(f"\nStarting calibration for {duration} seconds...")
+                time.sleep(2.0)  # Give user time to prepare
+            except (ValueError, KeyboardInterrupt):
+                print("Using default 10 seconds...")
+                duration = 10.0
+                import time
+                time.sleep(2.0)
+
+            # Run calibration using the current eye tracker
+            result = self.eye_tracker.calibrate_ear_thresholds(duration)
+
+            if result["success"]:
+                print("\n" + "="*50)
+                print("CALIBRATION SUCCESSFUL!")
+                print("="*50)
+                print(f"Baseline EAR: {result['baseline_mean']:.3f} ± {result['baseline_std']:.3f}")
+                print(f"New Blink Threshold: {result['blink_threshold']:.3f}")
+                print(f"New Drowsy Threshold: {result['drowsy_threshold']:.3f}")
+                print(f"Samples used: {result['samples_used']}/{result['samples_total']}")
+                print("\nThresholds updated in settings.json")
+                print("Restart application to apply new thresholds")
+
+                # Update internal config if needed
+                if hasattr(self, 'blink_detector') and self.blink_detector:
+                    # Update blink detector thresholds if it has the method
+                    if hasattr(self.blink_detector, 'update_thresholds'):
+                        self.blink_detector.update_thresholds(
+                            result['blink_threshold'],
+                            result['drowsy_threshold']
+                        )
+            else:
+                print(f"\nCALIBRATION FAILED: {result.get('error', 'Unknown error')}")
+
+            print("\nPress any key to continue monitoring...")
+
+        except Exception as e:
+            print(f"\nCALIBRATION ERROR: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            # Resume main processing
+            self.running = original_running
 
     def _create_comprehensive_overlay(self, frame: np.ndarray, frame_result: Dict[str, Any]) -> np.ndarray:
         """
@@ -2059,6 +2133,10 @@ def main():
         import traceback
         traceback.print_exc()
         return 1
+
+
+
+
 
 
 if __name__ == "__main__":
