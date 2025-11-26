@@ -85,7 +85,8 @@ class EyeTracker:
         # Camera calibration parameters for distance estimation
         self._focal_length = float(health_cfg.get("camera_focal_length", 600))
         self._avg_eye_distance_cm = float(health_cfg.get("AVERAGE_EYE_DISTANCE_CM", 6.3))
-
+        self._min_distance_cm = float(health_cfg.get("MIN_REASONABLE_DISTANCE", 20.0))
+        self._max_distance_cm = float(health_cfg.get("MAX_REASONABLE_DISTANCE", 150.0))
         # Frame buffer cho debugging
         self.f = None
 
@@ -248,7 +249,7 @@ class EyeTracker:
             eye_distance_px = np.linalg.norm(l_pts[0] - r_pts[0])
             if eye_distance_px > 30:  # Minimum reasonable pixel distance
                 distance_cm = (self._avg_eye_distance_cm * self._focal_length) / eye_distance_px
-                distance_cm = np.clip(distance_cm, 50, 120)  # Reasonable range
+                distance_cm = np.clip(distance_cm, self._min_distance_cm, self._max_distance_cm)  # Reasonable range
                 out["distance_cm"] = distance_cm
 
             # Gaze point estimation (simplified - center of eyes)
