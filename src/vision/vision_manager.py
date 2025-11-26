@@ -269,20 +269,20 @@ class VisionManager:
                 # Extract camera frame first
                 raw_frame = self.vision_app.eye_tracker.get_frame()
                 
-                # Create annotated frame with all landmarks and overlays for UI display
-                # Even if there's an error (no face detected), we still show the raw camera feed
+                # Create annotated frame with landmarks if enabled
                 if raw_frame is not None:
-                    if 'error' not in frame_result:
-                        # Face detected - create MINIMAL overlay (ONLY landmarks, NO text)
-                        annotated_frame = self.vision_app.create_minimal_landmarks_only(raw_frame, frame_result)
-                    else:
-                        # No face detected - send raw frame with error message
-                        annotated_frame = raw_frame.copy()
+                    annotated_frame = raw_frame.copy()
+                    
+                    # Add error message if no face detected
+                    if 'error' in frame_result:
                         h, w = annotated_frame.shape[:2]
-                        # Add error message overlay
                         cv2.putText(annotated_frame, "No Face Detected - Please position your face in view", 
                                   (int(w*0.1), int(h*0.5)), cv2.FONT_HERSHEY_SIMPLEX, 
                                   0.7, (0, 0, 255), 2)
+                    else:
+                        # Draw face landmarks if enabled
+                        if hasattr(self.vision_app, '_draw_face_landmarks'):
+                            self.vision_app._draw_face_landmarks(annotated_frame, frame_result)
                 else:
                     annotated_frame = None
                     
