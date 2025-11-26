@@ -9,8 +9,8 @@
     "LEFT_EYE": [33, 160, 158, 133, 144, 153],
     "RIGHT_EYE": [362, 385, 387, 263, 373, 380],
     "BLINK_THRESHOLD": 0.27,
-    "DROWSY_THRESHOLD": 0.27,
-    "consecutive_frames": 3,
+    "DROWSY_THRESHOLD": 0.30,
+    "consecutive_frames": 2,
     "max_blink_duration": 0.5,
     "min_blink_interval": 0.1,
     "camera_focal_length": 600,
@@ -24,7 +24,7 @@
     "max_shoulder_tilt": 15,
     "session_duration_threshold": 3600,
     "data_retention_days": 7,
-    "drowsy_ear_duration": 3.0
+    "drowsy_ear_duration": 1.5
   },
   "ui_settings": {
     "theme": "dark",

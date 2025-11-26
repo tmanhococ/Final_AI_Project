@@ -76,7 +76,7 @@ class DrowsinessDetector:
         # Drowsiness state với hysteresis
         self._drowsy: bool = False
         self._drowsy_end_time: Optional[float] = None    # Thời điểm kết thúc drowsy
-        self.DROWSY_RELEASE_SEC: float = 1.0             # Giữ trạng thái drowsy thêm 1s
+        self.DROWSY_RELEASE_SEC: float = 0.5             # Giữ trạng thái drowsy thêm 0.5s (nhạy hơn)
 
     def update(
         self,
@@ -254,10 +254,10 @@ class DrowsinessDetector:
 
     def _update_drowsy_state(self, drowsy_signals: int, now: float, info: Dict[str, Any]) -> None:
         """
-        Cập nhật trạng thái drowsiness với hysteresis
+        Cập nhật trạng thái drowsiness với hysteresis - TĂNG NHẠY
 
-        - Cần ít nhất 2 signals để trigger drowsy
-        - Giữ trạng thái drowsy thêm 1s sau khi signals mất
+        - Chỉ cần 1 signal để trigger drowsy (EAR thấp là đủ)
+        - Giữ trạng thái drowsy thêm 0.5s sau khi signals mất
         - Tránh flickering trạng thái
 
         Args:
@@ -265,7 +265,7 @@ class DrowsinessDetector:
             now: Timestamp hiện tại
             info: Dict để lưu lý do
         """
-        if drowsy_signals >= 2:
+        if drowsy_signals >= 1:
             # Trigger drowsiness
             self._drowsy = True
             self._drowsy_end_time = None
@@ -280,7 +280,7 @@ class DrowsinessDetector:
                 self._drowsy_end_time = None
 
         # Ghi lý do nếu đang drowsy
-        if self._drowsy and drowsy_signals >= 2:
+        if self._drowsy and drowsy_signals >= 1:
             info["reason"] = self._get_drowsiness_reason(drowsy_signals)
 
     def _get_drowsiness_reason(self, drowsy_signals: int) -> str:

@@ -262,6 +262,10 @@ class PostureAnalyzer:
         Returns:
             str: "good", "poor", hoặc "unknown"
         """
+        # Handle None values trước khi kiểm tra
+        if yaw is None or pitch is None or shoulder is None:
+            return "unknown"
+
         # Với góc đã chuẩn hóa, chỉ cần kiểm tra giá trị tuyệt đối
         if abs(yaw) > self._max_head_yaw:
             return "poor"
@@ -294,6 +298,10 @@ class PostureAnalyzer:
             str: "good", "poor", hoặc "unknown"
         """
         # Sử dụng hàm chuẩn hóa mới để一致 với analyze()
+        # Handle None values trước khi chuẩn hóa
+        if yaw is None or pitch is None or shoulder is None:
+            return "unknown"
+
         yaw_norm = self._normalize_angle_to_zero(yaw)
         pitch_norm = self._normalize_angle_to_zero(pitch)
         shoulder_norm = self._normalize_angle_to_zero(shoulder)
