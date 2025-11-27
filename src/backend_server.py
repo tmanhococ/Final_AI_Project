@@ -27,12 +27,23 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 
-# Add current directory to Python path for imports
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
+# Add paths to Python path for imports
+current_dir = Path(__file__).parent  # src/
+project_root = current_dir.parent    # project root
+sys.path.insert(0, str(current_dir))      # For vision module
+sys.path.insert(0, str(project_root))     # For chatbot 'from src.chatbot...'
 
 # Import vision manager
 from vision.vision_manager import VisionManager
+
+# Import chatbot interface
+try:
+    from src.chatbot.chat_interface import chat_interface
+    CHATBOT_AVAILABLE = True
+except ImportError as e:
+    print(f"[Warning] Chatbot module not available: {e}")
+    CHATBOT_AVAILABLE = False
+    chat_interface = None
 
 
 # =============================================================================
@@ -72,6 +83,51 @@ socketio = SocketIO(
 # Create a single global instance of VisionManager
 # This instance will be shared across all Flask routes and SocketIO handlers
 vision_manager = VisionManager()
+
+
+# =============================================================================
+# CHATBOT MANAGER INSTANCE
+# =============================================================================
+
+# Global chatbot app instance (lazy initialization)
+_chatbot_app = None
+_chatbot_init_lock = threading.Lock()
+_chatbot_init_error = None
+
+
+def get_chatbot_app():
+    """
+    Get or create the chatbot application (lazy initialization)
+    
+    Returns:
+        Chatbot app instance or None if initialization failed
+    """
+    global _chatbot_app, _chatbot_init_error
+    
+    if not CHATBOT_AVAILABLE:
+        return None
+    
+    if _chatbot_app is not None:
+        return _chatbot_app
+    
+    # Use lock to ensure thread-safe initialization
+    with _chatbot_init_lock:
+        # Double-check after acquiring lock
+        if _chatbot_app is not None:
+            return _chatbot_app
+        
+        try:
+            print("[Chatbot] Initializing chatbot application...")
+            # Import here to avoid circular imports and allow lazy loading
+            from src.chatbot.app_runtime import create_chatbot_app
+            _chatbot_app = create_chatbot_app()
+            print("[Chatbot] Chatbot application initialized successfully")
+            return _chatbot_app
+        except Exception as e:
+            _chatbot_init_error = str(e)
+            print(f"[Chatbot] Failed to initialize chatbot: {e}")
+            print(traceback.format_exc())
+            return None
 
 
 # =============================================================================
@@ -589,6 +645,170 @@ def api_update_settings():
             "message": f"Server error: {str(e)}",
             "error": "SERVER_ERROR",
             "details": traceback.format_exc()
+        }), 500
+
+
+# =============================================================================
+# CHATBOT API ROUTES
+# =============================================================================
+
+@app.route('/api/chatbot/message', methods=['POST'])
+def api_chatbot_message():
+    """
+    Send a message to the chatbot and get a response
+    
+    POST /api/chatbot/message
+    
+    Request Body:
+        {
+            "message": str (required),
+            "thread_id": str (optional, default: "default_user")
+        }
+    
+    Response:
+        {
+            "success": true/false,
+            "response": str (if success),
+            "message": str (status message),
+            "timestamp": float,
+            "error": str (if success is false)
+        }
+    
+    Error Codes:
+        - CHATBOT_UNAVAILABLE: Chatbot module not installed or failed to initialize
+        - INVALID_REQUEST: Missing required fields or invalid JSON
+        - PROCESSING_ERROR: Error during chatbot processing
+        - SERVER_ERROR: Unexpected server error
+    
+    Example:
+        POST /api/chatbot/message
+        Body: {"message": "What's my average blink rate?"}
+        Response: {"success": true, "response": "Your average blink rate is...", "timestamp": 1234567890.123}
+    """
+    try:
+        print("[API] POST /api/chatbot/message - Processing chatbot request")
+        
+        # Check if chatbot is available
+        if not CHATBOT_AVAILABLE:
+            return jsonify({
+                "success": False,
+                "message": "Chatbot module is not available. Please install required dependencies.",
+                "error": "CHATBOT_UNAVAILABLE"
+            }), 503
+        
+        # Parse request JSON
+        try:
+            request_data = request.get_json()
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": "Invalid JSON in request body",
+                "error": "INVALID_REQUEST",
+                "details": str(e)
+            }), 400
+        
+        if not request_data:
+            return jsonify({
+                "success": False,
+                "message": "Request body must be valid JSON",
+                "error": "INVALID_REQUEST"
+            }), 400
+        
+        # Extract message and thread_id from request
+        user_message = request_data.get('message', '').strip()
+        thread_id = request_data.get('thread_id', 'default_user')
+        
+        # Validate message
+        if not user_message:
+            return jsonify({
+                "success": False,
+                "message": "Message field is required and cannot be empty",
+                "error": "INVALID_REQUEST"
+            }), 400
+        
+        # Validate thread_id
+        if not isinstance(thread_id, str) or not thread_id.strip():
+            thread_id = 'default_user'
+        
+        print(f"[Chatbot] User message: {user_message[:50]}... (thread_id: {thread_id})")
+        
+        # Get or initialize chatbot app
+        chatbot_app = get_chatbot_app()
+        
+        if chatbot_app is None:
+            error_detail = _chatbot_init_error or "Unknown initialization error"
+            return jsonify({
+                "success": False,
+                "message": f"Chatbot failed to initialize: {error_detail}",
+                "error": "CHATBOT_UNAVAILABLE",
+                "details": error_detail
+            }), 503
+        
+        # Call chatbot interface
+        try:
+            bot_response = chat_interface(
+                user_input=user_message,
+                thread_id=thread_id,
+                app=chatbot_app
+            )
+            
+            print(f"[Chatbot] Response: {bot_response[:50]}...")
+            
+            return jsonify({
+                "success": True,
+                "response": bot_response,
+                "message": "Message processed successfully",
+                "timestamp": time.time(),
+                "thread_id": thread_id
+            }), 200
+            
+        except Exception as e:
+            print(f"[Chatbot] Processing error: {e}")
+            print(traceback.format_exc())
+            
+            return jsonify({
+                "success": False,
+                "message": "Error processing chatbot request",
+                "error": "PROCESSING_ERROR",
+                "details": str(e)
+            }), 500
+        
+    except Exception as e:
+        print(f"[API] Unexpected error in chatbot endpoint: {e}")
+        print(traceback.format_exc())
+        
+        return jsonify({
+            "success": False,
+            "message": f"Server error: {str(e)}",
+            "error": "SERVER_ERROR",
+            "details": traceback.format_exc()
+        }), 500
+
+
+@app.route('/api/chatbot/status', methods=['GET'])
+def api_chatbot_status():
+    """
+    Get chatbot initialization status
+    
+    GET /api/chatbot/status
+    
+    Response:
+        {
+            "available": bool,
+            "initialized": bool,
+            "error": str or null
+        }
+    """
+    try:
+        return jsonify({
+            "available": CHATBOT_AVAILABLE,
+            "initialized": _chatbot_app is not None,
+            "error": _chatbot_init_error
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": "SERVER_ERROR",
+            "message": str(e)
         }), 500
 
 
