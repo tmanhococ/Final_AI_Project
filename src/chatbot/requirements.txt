@@ -1,0 +1,22 @@
+
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-experimental>=0.3.0
+langgraph>=0.2.0
+
+# Google Gemini & Embeddings (miễn phí theo quota)
+google-generativeai>=0.8.0
+langchain-google-genai>=1.0.0
+
+# Vector store & dữ liệu
+chromadb>=0.5.5
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Tiện ích khác
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# Testing
+pytest>=8.0.0
