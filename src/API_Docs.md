@@ -82,6 +82,30 @@ Lấy trạng thái hiện tại của hệ thống.
 
 ### 2. Quản lý Cài đặt
 
+#### **POST** `/api/settings/face-mesh`
+Bật/tắt hiển thị face mesh landmarks trên khuôn mặt.
+
+**Request:**
+```json
+{
+  "enabled": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "face_mesh_enabled": true
+}
+```
+
+**Mô tả:** 
+- Endpoint này cho phép bật/tắt việc hiển thị các landmarks của khuôn mặt trên camera feed
+- Thay đổi áp dụng ngay lập tức mà không cần reload vision system
+
+---
+
 #### **GET** `/api/settings`
 Đọc cấu hình từ `config/settings.json`.
 
@@ -118,7 +142,14 @@ Cập nhật cấu hình và tải lại hệ thống.
 ```json
 {
   "settings": {
-    "health_monitoring": { ... },
+    "health_monitoring": {
+      "frame_rate": 30,
+      "camera_index": 0,
+      "DROWSY_THRESHOLD": 0.30,
+      "BLINK_THRESHOLD": 0.27,
+      "MIN_REASONABLE_DISTANCE": 20,
+      "MAX_REASONABLE_DISTANCE": 150
+    },
     "ui_settings": { ... }
   },
   "reload_vision": true
@@ -134,33 +165,26 @@ Cập nhật cấu hình và tải lại hệ thống.
 }
 ```
 
+**Các thông số cài đặt:**
+- `frame_rate`: Tốc độ xử lý khung hình (10-60 FPS)
+- `camera_index`: Chỉ số camera (0=mặc định, 1=camera ngoài)
+- `DROWSY_THRESHOLD`: Ngưỡng EAR phát hiện buồn ngủ (0.20-0.40)
+- `BLINK_THRESHOLD`: Ngưỡng EAR phát hiện chớp mắt (0.20-0.35)
+- `MIN_REASONABLE_DISTANCE`: Khoảng cách tối thiểu an toàn (15-50 cm)
+- `MAX_REASONABLE_DISTANCE`: Khoảng cách tối đa hiệu quả (80-200 cm)
+
 **Hành vi:**
 1. Validate cấu trúc JSON
-2. Backup settings hiện tại
+2. Backup settings hiện tại vào `.json.backup`
 3. Ghi settings mới vào file
 4. Nếu `reload_vision: true` và hệ thống đang chạy:
-   - Dừng hệ thống
+   - Dừng hệ thống hiện tại
    - Khởi động lại với settings mới
+5. Cập nhật global thresholds trong UI để áp dụng ngay lập tức
 
----
-
-#### **POST** `/api/settings/face-mesh`
-Bật/tắt hiển thị landmarks trên khuôn mặt.
-
-**Request:**
-```json
-{
-  "enabled": true
-}
-```
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "face_mesh_enabled": true
-}
-```
+**Lưu ý:** 
+- Các thay đổi về thresholds được đồng bộ với frontend để cảnh báo real-time
+- Frontend sẽ tự động cập nhật các biến: `window.drowsyThreshold`, `window.blinkThreshold`, `window.minDistanceThreshold`, `window.maxDistanceThreshold`
 
 ---
 
@@ -209,32 +233,43 @@ Stream khung hình camera (15 FPS).
 ---
 
 #### `health_metrics`
-Stream các chỉ số sức khỏe.
+Stream các chỉ số sức khỏe và cảnh báo real-time.
 
 **Dữ liệu:**
 ```json
 {
-  "eye_aspect_ratio": {
-    "left": 0.25,
-    "right": 0.26,
-    "average": 0.255
+  "eye": {
+    "avg_ear": 0.255,
+    "distance_cm": 45.2
   },
-  "blink_count": 15,
-  "blink_rate": 18.5,
+  "blink": {
+    "blink_count": 15,
+    "blink_rate": 18.5
+  },
   "posture": {
-    "head_tilt": 5.2,
-    "head_rotation": -2.3,
+    "head_side_angle": 5.2,
+    "head_updown_angle": -2.3,
+    "shoulder_tilt": 1.5,
+    "eye_distance_cm": 45.2,
     "status": "good"
   },
   "drowsiness": {
-    "level": 0.2,
-    "alert": false
+    "detected": false
   },
-  "timestamp": 1638000000.123
+  "system": {
+    "timestamp": 1638000000.123
+  }
 }
 ```
 
-**Tần suất:** Mỗi 0.5 giây
+**Tần suất:** Mỗi 0.5 giây (2 Hz)
+
+**Frontend Processing:**
+- So sánh `distance_cm` với `window.minDistanceThreshold` → Cảnh báo **TOO CLOSE**
+- So sánh `distance_cm` với `window.maxDistanceThreshold` → Cảnh báo **TOO FAR**
+- Kiểm tra `drowsiness.detected` → Cảnh báo **DROWSINESS DETECTED**
+- Kiểm tra `posture.status === "poor"` → Cảnh báo **BAD POSTURE**
+- Tất cả cảnh báo có cooldown 10 giây để tránh spam
 
 ---
 
@@ -273,16 +308,110 @@ Cập nhật trạng thái hệ thống.
 ### Cập nhật cài đặt:
 ```
 1. Client: POST /api/settings (với reload_vision: true)
-2. Server: Lưu settings mới
+2. Server: Lưu settings mới vào config/settings.json
 3. Server: Dừng hệ thống hiện tại
 4. Server: Khởi động lại với cấu hình mới
+5. Client: Cập nhật global thresholds (drowsy, blink, minDist, maxDist)
+6. Client: Áp dụng ngay cho cảnh báo real-time
 ```
+
+### Luồng cảnh báo real-time:
+```
+1. Server: Broadcast health_metrics qua WebSocket (mỗi 0.5s)
+2. Client: Nhận metrics và kiểm tra:
+   - Distance < minDistanceThreshold → Popup "TOO CLOSE!"
+   - Distance > maxDistanceThreshold → Popup "TOO FAR!"
+   - drowsiness.detected → Popup "DROWSINESS DETECTED!"
+   - posture.status === "poor" → Popup "BAD POSTURE!"
+3. Client: Cooldown 10s giữa các notification cùng loại
+```
+
+---
+
+---
+
+## 3. Chatbot API
+
+#### **POST** `/api/chatbot/message`
+Gửi tin nhắn đến chatbot và nhận phản hồi.
+
+**Request:**
+```json
+{
+  "message": "What's my average blink rate?",
+  "thread_id": "user_12345"
+}
+```
+
+**Response thành công (200):**
+```json
+{
+  "success": true,
+  "response": "Your average blink rate is 18.5 blinks per minute...",
+  "message": "Message processed successfully",
+  "timestamp": 1638000000.123,
+  "thread_id": "user_12345"
+}
+```
+
+**Response lỗi:**
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "error": "ERROR_CODE"
+}
+```
+
+**Mã lỗi:**
+- `CHATBOT_UNAVAILABLE` - Module chatbot không được cài đặt
+- `INVALID_REQUEST` - Thiếu trường bắt buộc hoặc JSON không hợp lệ
+- `PROCESSING_ERROR` - Lỗi xử lý chatbot
+- `SERVER_ERROR` - Lỗi server không mong đợi
+
+---
+
+#### **GET** `/api/chatbot/status`
+Kiểm tra trạng thái chatbot.
+
+**Response (200):**
+```json
+{
+  "available": true,
+  "initialized": true,
+  "error": null
+}
+```
+
 ---
 
 ## Cách sử dụng
 
-```python
-python backend_server.py 
+### Cài đặt thư viện:
+```bash
+pip install -r requirements.txt
 ```
 
-Sau đó truy cập localhost://127.0.0.1:5000/
+### Khởi động server:
+```bash
+python backend_server.py
+```
+
+### Truy cập UI:
+```
+http://localhost:5000
+```
+
+### Cấu hình Settings:
+1. Mở Settings Panel trong UI
+2. Điều chỉnh các thông số:
+   - **Frame Rate**: Tốc độ xử lý (↓ giảm CPU)
+   - **Drowsy/Blink Threshold**: Độ nhạy phát hiện
+   - **Min/Max Distance**: Ngưỡng cảnh báo khoảng cách
+3. Nhấn **Save Settings** để áp dụng
+4. Hệ thống tự động reload với cấu hình mới
+
+### Xem Logs:
+- Backend logs: Terminal chạy `backend_server.py`
+- Frontend logs: Browser Console (F12)
+- Notification logs: Tìm `[NOTIFICATION]` trong console
