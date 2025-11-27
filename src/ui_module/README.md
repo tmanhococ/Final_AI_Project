@@ -15,6 +15,7 @@ Giao diện UI cho hệ thống giám sát sức khỏe bằng camera, hiển th
 - **Camera Controls**: On/Off camera, Toggle landmarks (face mesh)
 - **Real-time**: WebSocket streaming (~15 FPS video, 2 Hz metrics)
 - **Notifications**: Popup alerts
+- **Chatbot**: Chatbot module
 
 ## API Endpoints
 
@@ -23,6 +24,7 @@ Giao diện UI cho hệ thống giám sát sức khỏe bằng camera, hiển th
 - `GET /api/settings` - Lấy cài đặt
 - `POST /api/settings` - Lưu cài đặt
 - `POST /api/settings/face-mesh` - Bật tắt landmarks
+- `POST /api/chatbot/message` - Gửi tin nhắn đến chatbot
 
 **WebSocket:**
 - `camera_frame` - Video frames

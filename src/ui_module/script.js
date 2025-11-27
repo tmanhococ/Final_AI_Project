@@ -273,6 +273,19 @@ saveBtn.addEventListener('click', async () => {
         if (response.ok) {
             const result = await response.json();
             console.log('Settings saved:', result);
+            
+            // Update all global thresholds with new values
+            window.drowsyThreshold = parseFloat(inputs.drowsyThreshold?.value || 0.30);
+            window.blinkThreshold = parseFloat(inputs.blinkThreshold?.value || 0.27);
+            window.minDistanceThreshold = parseInt(inputs.minReasonableDistance?.value || 20);
+            window.maxDistanceThreshold = parseInt(inputs.maxReasonableDistance?.value || 150);
+            
+            console.log('[SAVE] Updated thresholds:', {
+                drowsy: window.drowsyThreshold,
+                blink: window.blinkThreshold,
+                minDist: window.minDistanceThreshold,
+                maxDist: window.maxDistanceThreshold
+            });
 
             // Visual feedback
             saveBtn.textContent = result.reloaded ? 'Saved! Reloaded!' : 'Saved!';
@@ -364,8 +377,11 @@ let lastBadPostureNotification = 0;
 let lastDistanceWarning = 0;
 const NOTIFICATION_COOLDOWN = 10000; // 10 giây
 
-// Distance threshold for warning (will be loaded from settings)
-window.minDistanceThreshold = 20; // Default 20cm
+// Global thresholds for real-time checking (will be loaded from settings)
+window.drowsyThreshold = 0.30; // Default EAR threshold for drowsiness
+window.blinkThreshold = 0.27; // Default EAR threshold for blinks
+window.minDistanceThreshold = 20; // Default min distance (cm)
+window.maxDistanceThreshold = 150; // Default max distance (cm)
 
 /**
  * Hiển thị pop-up notification
@@ -476,14 +492,19 @@ function updateHealthMetricsFromBackend(data) {
         });
     }
     
-    // Check distance warning - if face too close to screen
+    // Check distance warning - if face too close or too far from screen
     if (distanceCm) {
-        const tooClose = distanceCm < window.minDistanceThreshold + 1;
+        const tooClose = distanceCm < window.minDistanceThreshold + 0.1;
+        const tooFar = distanceCm > window.maxDistanceThreshold - 0.1;
         const cooldownPassed = (now - lastDistanceWarning) > NOTIFICATION_COOLDOWN;
         
         if (tooClose && cooldownPassed) {
-            console.log('[NOTIFICATION] ⚠️ Showing distance warning!');
+            console.log('[NOTIFICATION] ⚠️ Showing distance warning - TOO CLOSE!');
             showPopupNotification('⚠️ TOO CLOSE! Move back from the screen!', 'warning');
+            lastDistanceWarning = now;
+        } else if (tooFar && cooldownPassed) {
+            console.log('[NOTIFICATION] ⚠️ Showing distance warning - TOO FAR!');
+            showPopupNotification('⚠️ TOO FAR! Move closer to the screen!', 'warning');
             lastDistanceWarning = now;
         }
     }
@@ -591,6 +612,13 @@ const chatInput = document.querySelector('.chat-input');
 const sendBtn = document.querySelector('.send-btn');
 const chatWindow = document.getElementById('chatWindow');
 
+// Generate or retrieve thread ID for conversation memory
+let chatThreadId = localStorage.getItem('aeyepro_chat_thread_id');
+if (!chatThreadId) {
+    chatThreadId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('aeyepro_chat_thread_id', chatThreadId);
+}
+
 /**
  * Creates a message element
  * @param {string} message - The message text
@@ -610,11 +638,32 @@ function createMessageElement(message, isUser) {
 }
 
 /**
- * Sends a chat message
+ * Creates a loading indicator element
+ * @returns {HTMLElement} Loading indicator element
  */
-function sendMessage() {
+function createLoadingIndicator() {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot-message';
+    messageDiv.id = 'chatLoadingIndicator';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = '<span style="opacity: 0.6;">Typing...</span>';
+
+    messageDiv.appendChild(bubble);
+    return messageDiv;
+}
+
+/**
+ * Sends a chat message to the chatbot API
+ */
+async function sendMessage() {
     const message = chatInput.value.trim();
     if (message === '') return;
+
+    // Disable input while processing
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
 
     // Add user message
     chatWindow.appendChild(createMessageElement(message, true));
@@ -625,17 +674,79 @@ function sendMessage() {
     // Scroll to bottom
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
-    // Simulate bot response
-    setTimeout(() => {
-        const botResponse = `Processing your request: "${message}"`;
-        chatWindow.appendChild(createMessageElement(botResponse, false));
+    // Show loading indicator
+    const loadingIndicator = createLoadingIndicator();
+    chatWindow.appendChild(loadingIndicator);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    try {
+        // Call chatbot API
+        const response = await fetch(`${BACKEND_URL}/api/chatbot/message`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                thread_id: chatThreadId
+            })
+        });
+
+        // Remove loading indicator
+        loadingIndicator.remove();
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to get chatbot response');
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.response) {
+            // Add bot response
+            chatWindow.appendChild(createMessageElement(data.response, false));
+        } else {
+            throw new Error('Invalid response from chatbot');
+        }
+
+    } catch (error) {
+        console.error('Chatbot error:', error);
+        
+        // Remove loading indicator if still exists
+        const existingIndicator = document.getElementById('chatLoadingIndicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+
+        // Show error message in chat
+        let errorMessage = 'Sorry, I encountered an error. ';
+        if (error.message.includes('CHATBOT_UNAVAILABLE')) {
+            errorMessage += 'The chatbot service is currently unavailable. Please ensure the chatbot module is properly installed.';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage += 'Cannot connect to the backend server. Please check if the server is running.';
+        } else {
+            errorMessage += error.message || 'Please try again.';
+        }
+        
+        chatWindow.appendChild(createMessageElement(errorMessage, false));
+        
+        // Show system notification
+        showNotification('Chatbot error: ' + error.message, 'error');
+    } finally {
+        // Re-enable input
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+
+        // Scroll to bottom
         chatWindow.scrollTop = chatWindow.scrollHeight;
-    }, 1000);
+    }
 }
 
 sendBtn.addEventListener('click', sendMessage);
 chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         sendMessage();
     }
 });
@@ -808,13 +919,29 @@ async function initializeApp() {
                 if (inputs.blinkThreshold && healthMonitoring.BLINK_THRESHOLD !== undefined) {
                     inputs.blinkThreshold.value = healthMonitoring.BLINK_THRESHOLD;
                 }
+                if (inputs.drowsyThreshold && healthMonitoring.DROWSY_THRESHOLD !== undefined) {
+                    inputs.drowsyThreshold.value = healthMonitoring.DROWSY_THRESHOLD;
+                    window.drowsyThreshold = healthMonitoring.DROWSY_THRESHOLD;
+                }
+                if (inputs.blinkThreshold && healthMonitoring.BLINK_THRESHOLD !== undefined) {
+                    inputs.blinkThreshold.value = healthMonitoring.BLINK_THRESHOLD;
+                    window.blinkThreshold = healthMonitoring.BLINK_THRESHOLD;
+                }
                 if (inputs.minReasonableDistance && healthMonitoring.MIN_REASONABLE_DISTANCE !== undefined) {
                     inputs.minReasonableDistance.value = healthMonitoring.MIN_REASONABLE_DISTANCE;
-                    window.minDistanceThreshold = healthMonitoring.MIN_REASONABLE_DISTANCE; // Store for distance warning
+                    window.minDistanceThreshold = healthMonitoring.MIN_REASONABLE_DISTANCE;
                 }
                 if (inputs.maxReasonableDistance && healthMonitoring.MAX_REASONABLE_DISTANCE !== undefined) {
                     inputs.maxReasonableDistance.value = healthMonitoring.MAX_REASONABLE_DISTANCE;
+                    window.maxDistanceThreshold = healthMonitoring.MAX_REASONABLE_DISTANCE;
                 }
+                
+                console.log('[INIT] Loaded thresholds from backend:', {
+                    drowsy: window.drowsyThreshold,
+                    blink: window.blinkThreshold,
+                    minDist: window.minDistanceThreshold,
+                    maxDist: window.maxDistanceThreshold
+                });
                 
                 console.log('Settings loaded from backend');
             }
