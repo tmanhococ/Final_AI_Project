@@ -3,17 +3,41 @@
 
 # Computer Vision & Media Processing
 opencv-python>=4.8.0
-mediapipe>=0.10.0
+mediapipe==0.10.14
 
 # Data Processing
 numpy>=1.21.0
 pandas>=1.3.0
+tabulate>=0.9.0
 
 # Web Server & Real-time Communication
 flask>=2.3.0
 flask-socketio>=5.3.0
 flask-cors>=4.0.0
 python-socketio>=5.9.0
+
+# LangChain
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-experimental>=0.3.0
+langgraph>=0.2.0
+
+# Google Gemini & Embeddings (miễn phí theo quota)
+google-generativeai>=0.8.0
+langchain-google-genai>=1.0.0
+
+# Vector store & dữ liệu
+chromadb>=0.5.5
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Tiện ích khác
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# Testing
+pytest>=8.0.0
 
 # Installation:
 # pip install -r requirements.txt
