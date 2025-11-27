@@ -6,10 +6,10 @@ Theo DESIGN_DOCS_V2, state chia sẻ giữa các node được định nghĩa b�
 
 from __future__ import annotations
 
-import operator
 from typing import Annotated, List, Literal, NotRequired, TypedDict
 
 from langchain_core.messages import BaseMessage
+from langgraph.graph import add_messages
 
 
 class GraphState(TypedDict):
@@ -28,7 +28,7 @@ class GraphState(TypedDict):
     """
 
     # --- CHAT MEMORY ---
-    messages: Annotated[List[BaseMessage], operator.add]
+    messages: Annotated[List[BaseMessage], add_messages]
 
     # --- INPUT/OUTPUT ---
     original_question: str
@@ -38,9 +38,10 @@ class GraphState(TypedDict):
     # --- RAG INTERNAL CONTROL ---
     analyzed_intent: Literal["realtime_data", "chunked_data", "both", "fall_back"]
     sub_queries: List[str]
-    context: Annotated[List[str], operator.add]
+    context: List[str]
     csv_context: NotRequired[List[str]]
     doc_context: NotRequired[List[str]]
+    route: NotRequired[Literal["social", "health"]]
     retry_count: int
 
     # --- GRADER FLAGS ---

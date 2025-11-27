@@ -22,28 +22,22 @@ def generator_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object
     - state["generation"]: str
     """
     question = str(state.get("reformulated_question", "")).strip()
-    context_list: List[str] = list(state.get("context", []))  # type: ignore[assignment]
-    csv_context: List[str] = list(state.get("csv_context", []))  # type: ignore[assignment]
-    doc_context: List[str] = list(state.get("doc_context", []))  # type: ignore[assignment]
+    context_list: List[str] = list(state.get("context", []) or [])  # type: ignore[arg-type]
+    csv_context: List[str] = list(state.get("csv_context", []) or [])  # type: ignore[arg-type]
+    doc_context: List[str] = list(state.get("doc_context", []) or [])  # type: ignore[arg-type]
 
     if not question:
         raise ValueError("generator_node requires non-empty 'reformulated_question'.")
 
-    if not context_list:
-        effective_context = csv_context + doc_context
-    else:
-        effective_context = context_list
+    effective_context = context_list or (csv_context + doc_context)
 
     if not effective_context:
-        fallback_message = (
+        generation = (
             "Xin lỗi, tôi không có đủ thông tin đáng tin cậy để trả lời câu hỏi này. "
             "Bạn có thể cung cấp thêm dữ liệu cụ thể hơn hoặc hỏi một câu khác?"
         )
-        context_block = "Không có dữ liệu bổ sung."
-        generation = fallback_message
     else:
         context_block = "\n\n".join(effective_context)
-
         system_prompt = (
             "Bạn là trợ lý sức khỏe. Sử dụng thông tin trong phần CONTEXT để trả lời "
             "câu hỏi của người dùng một cách rõ ràng, an toàn, không chẩn đoán quá mức.\n"
@@ -57,9 +51,6 @@ def generator_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object
             str(response.content) if hasattr(response, "content") else str(response)
         )
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["generation"] = generation
-    new_state["context"] = effective_context
-    return new_state
+    return {"generation": generation}
 
 

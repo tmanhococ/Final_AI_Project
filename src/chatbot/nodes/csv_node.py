@@ -66,8 +66,6 @@ def csv_analyst_node(state: StateDict, agent: SupportsInvoke) -> Dict[str, objec
             # Xử lý các lỗi khác
             csv_context.append(f"Lỗi khi truy vấn dữ liệu: {str(e)}")
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["csv_context"] = csv_context
-    return new_state
+    return {"csv_context": csv_context}
 
 

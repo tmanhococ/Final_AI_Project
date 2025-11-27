@@ -19,6 +19,7 @@ from __future__ import annotations
 import sys
 import io
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict
 
@@ -46,26 +47,25 @@ from src.chatbot.app_runtime import create_chatbot_app  # noqa: E402
 from src.chatbot.config import CHATBOT_CONFIG  # noqa: E402
 
 
-def trace_graph_execution(app, initial_state: Dict[str, Any], thread_id: str = "test_thread") -> Dict[str, Any]:
+def trace_graph_execution(app, initial_state: Dict[str, Any], thread_id: str | None = None) -> Dict[str, Any]:
     """
     Chạy graph và trace từng node được thực thi.
     
     Returns:
         Dict với keys: 'final_state', 'execution_path' (list các node đã chạy)
     """
-    execution_path = []
-    final_state = None
-    
-    # Stream events để trace
+    execution_path: List[str] = []
+
+    if thread_id is None:
+        thread_id = f"test_{uuid.uuid4().hex[:8]}"
+
     config = {"configurable": {"thread_id": thread_id}}
-    
-    # Stream với mode "values" để lấy state sau mỗi node và trace
-    for event in app.stream(initial_state, config=config, stream_mode="values"):
-        # event là dict với key là node name, value là state sau khi node đó chạy
+
+    # Stream để trace node execution
+    for event in app.stream(initial_state, config=config, stream_mode="updates"):
         for node_name, state_after_node in event.items():
             execution_path.append(node_name)
             print(f"  [TRACE] Node '{node_name}' executed")
-            # In một số thông tin quan trọng từ state
             if isinstance(state_after_node, dict):
                 if node_name == "guardrails" and "route" in state_after_node:
                     print(f"    -> route: {state_after_node['route']}")
@@ -78,13 +78,16 @@ def trace_graph_execution(app, initial_state: Dict[str, Any], thread_id: str = "
                 if "generation" in state_after_node and node_name == "social_bot":
                     gen_preview = str(state_after_node["generation"])[:100] + "..." if len(str(state_after_node["generation"])) > 100 else str(state_after_node["generation"])
                     print(f"    -> generation (preview): {gen_preview}")
-            # Lưu state cuối cùng
-            final_state = state_after_node
-    
-    # Nếu không có final_state (trường hợp không có node nào chạy), dùng initial_state
-    if final_state is None:
-        final_state = initial_state
-    
+
+    # Lấy state cuối cùng từ checkpoint (MemorySaver) để tránh chạy lại graph
+    checkpoint = app.get_state(config)
+    final_state: Dict[str, Any]
+    if checkpoint and isinstance(checkpoint, dict) and "state" in checkpoint:
+        final_state = checkpoint["state"]  # type: ignore[assignment]
+    else:
+        # Fallback nếu không có checkpoint
+        final_state = dict(initial_state)
+
     return {
         "final_state": final_state,
         "execution_path": execution_path,

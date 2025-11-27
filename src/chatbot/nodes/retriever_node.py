@@ -24,8 +24,6 @@ def medical_retriever_node(state: StateDict, vector_store: Chroma) -> Dict[str, 
         joined = "\n".join(d.page_content for d in docs)
         doc_context.append(joined)
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["doc_context"] = doc_context
-    return new_state
+    return {"doc_context": doc_context}
 
 

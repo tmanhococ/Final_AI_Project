@@ -60,25 +60,23 @@ def detect_intent_from_text(text: str) -> Literal["social", "health"]:
 
 
 def guardrails_node(state: StateDict) -> Dict[str, object]:
-    messages: List[BaseMessage] = state.get("messages", [])
+    messages: List[BaseMessage] = state.get("messages", [])  # type: ignore[assignment]
     if not messages:
         raise ValueError("guardrails_node requires non-empty 'messages' in state.")
-    
+
     last = messages[-1]
     if not isinstance(last, HumanMessage):
         raise ValueError("Last message must be HumanMessage.")
-    
+
     intent = detect_intent_from_text(str(last.content))
-    
-    # ✅ CHỈ return field "route"
     return {"route": intent}
 
 
 def social_response_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object]:
-    messages: List[BaseMessage] = state.get("messages", [])
+    messages: List[BaseMessage] = state.get("messages", [])  # type: ignore[assignment]
     if not messages:
         raise ValueError("social_response_node requires 'messages' in state.")
-    
+
     system_prompt = (
         "Bạn là trợ lý sức khỏe thân thiện. "
         "Hãy trả lời ngắn gọn, lịch sự cho các câu chào hỏi/xã giao."
@@ -91,8 +89,7 @@ def social_response_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, 
     generation = (
         str(response.content) if hasattr(response, "content") else str(response)
     )
-    
-    # ✅ CHỈ return field "generation"
+
     return {"generation": generation}
 
 
@@ -139,45 +136,8 @@ def contextualize_question(
     return text.strip()
 
 
-def guardrails_node(state: StateDict) -> Dict[str, object]:
-    messages: List[BaseMessage] = state.get("messages", [])
-    if not messages:
-        raise ValueError("guardrails_node requires non-empty 'messages' in state.")
-    
-    last = messages[-1]
-    if not isinstance(last, HumanMessage):
-        raise ValueError("Last message must be HumanMessage.")
-    
-    intent = detect_intent_from_text(str(last.content))
-    
-    # ✅ CHỈ return field "route"
-    return {"route": intent}
-
-
-def social_response_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object]:
-    messages: List[BaseMessage] = state.get("messages", [])
-    if not messages:
-        raise ValueError("social_response_node requires 'messages' in state.")
-    
-    system_prompt = (
-        "Bạn là trợ lý sức khỏe thân thiện. "
-        "Hãy trả lời ngắn gọn, lịch sự cho các câu chào hỏi/xã giao."
-    )
-    conversation: List[BaseMessage] = [
-        SystemMessage(content=system_prompt),
-        *messages,
-    ]
-    response = llm.invoke(conversation)
-    generation = (
-        str(response.content) if hasattr(response, "content") else str(response)
-    )
-    
-    # ✅ CHỈ return field "generation"
-    return {"generation": generation}
-
-
 def contextualize_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object]:
-    messages: List[BaseMessage] = state.get("messages", [])
+    messages: List[BaseMessage] = state.get("messages", [])  # type: ignore[assignment]
     original_question = str(state.get("original_question", "")).strip()
     if not messages or not original_question:
         raise ValueError(
@@ -185,8 +145,6 @@ def contextualize_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, ob
         )
     
     rewritten = contextualize_question(messages, original_question, llm)
-    
-    # ✅ CHỈ return field "reformulated_question"
     return {"reformulated_question": rewritten}
 
 

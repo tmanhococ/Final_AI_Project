@@ -50,9 +50,9 @@ def rewriter_node(state: StateDict, llm: BaseLanguageModel) -> Dict[str, object]
 
     new_query = rewrite_query(question, last_answer, llm)
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["sub_queries"] = [new_query]
-    new_state["retry_count"] = retry_count + 1
-    return new_state
+    return {
+        "sub_queries": [new_query],
+        "retry_count": retry_count + 1,
+    }
 
 

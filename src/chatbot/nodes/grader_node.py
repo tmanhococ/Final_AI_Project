@@ -57,10 +57,10 @@ def doc_grader_node(state: StateDict) -> Dict[str, object]:
 
     final_context = csv_context + filtered
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["doc_context"] = filtered
-    new_state["context"] = final_context
-    return new_state
+    return {
+        "doc_context": filtered,
+        "context": final_context,
+    }
 
 
 def answer_grader_node(state: StateDict) -> Dict[str, object]:
@@ -81,8 +81,6 @@ def answer_grader_node(state: StateDict) -> Dict[str, object]:
 
     is_valid = answer_quality_grader(answer, question, context_joined)
 
-    new_state: Dict[str, object] = dict(state)
-    new_state["answer_valid"] = is_valid
-    return new_state
+    return {"answer_valid": is_valid}
 
 

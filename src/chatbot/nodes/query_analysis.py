@@ -20,16 +20,60 @@ def heuristic_analyze_intent(question: str) -> IntentLiteral:
     q = question.lower()
     # Mở rộng keywords để bắt được ngôn ngữ tự nhiên hơn
     csv_keywords = [
-        "log", "session", "thống kê", "summary", "csv",
-        "phiên đo", "thời lượng", "dữ liệu", "bao nhiêu lần",
-        "trung bình", "tổng", "số lượng", "thống kê", "phân tích",
-        "duration", "avg", "average", "mean", "count"
+        "log",
+        "session",
+        "thống kê",
+        "summary",
+        "csv",
+        "phiên đo",
+        "thời lượng",
+        "dữ liệu",
+        "bao nhiêu lần",
+        "trung bình",
+        "tổng",
+        "số lượng",
+        "phân tích",
+        "duration",
+        "avg",
+        "average",
+        "mean",
+        "count",
     ]
     doc_keywords = [
-        "bệnh", "triệu chứng", "dấu hiệu", "nguyên nhân", "điều trị",
-        "hội chứng", "mỏi mắt", "đau", "nhức", "là gì", "giải thích",
-        "phòng ngừa", "cách", "làm sao", "như thế nào", "tại sao",
-        "cvs", "computer vision syndrome", "mắt", "thị lực"
+        "bệnh",
+        "triệu chứng",
+        "dấu hiệu",
+        "nguyên nhân",
+        "điều trị",
+        "hội chứng",
+        "mỏi mắt",
+        "đau",
+        "nhức",
+        "là gì",
+        "giải thích",
+        "phòng ngừa",
+        "cách",
+        "làm sao",
+        "như thế nào",
+        "tại sao",
+        "cvs",
+        "computer vision syndrome",
+        "mắt",
+        "thị lực",
+        "bác sĩ",
+        "tiến sĩ",
+        "ts.bs",
+        "giáo sư",
+        "chuyên gia",
+        "doctor",
+        "professor",
+        "expert",
+        "researcher",
+        "who is",
+        "là ai",
+        "ai là",
+        "tiểu sử",
+        "nói gì",
     ]
 
     has_csv = any(k in q for k in csv_keywords)
@@ -41,7 +85,8 @@ def heuristic_analyze_intent(question: str) -> IntentLiteral:
         return "realtime_data"
     if has_doc:
         return "chunked_data"
-    return "fall_back"
+    # Mặc định ưu tiên khai thác docs thay vì fall_back
+    return "chunked_data"
 
 
 def analyze_query_node(
