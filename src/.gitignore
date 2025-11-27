@@ -5,3 +5,4 @@ __pycache__
 .venv_chatbot/
 .pytest_cache/
 .env
+src/chatbot/.env
