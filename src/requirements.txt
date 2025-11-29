@@ -16,19 +16,35 @@ flask-socketio>=5.3.0
 flask-cors>=4.0.0
 python-socketio>=5.9.0
 
-# LangChain
-langchain>=0.3.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-langchain-experimental>=0.3.0
-langgraph>=0.2.0
+# Chatbot Dependencies - ASCII Only (No Unicode)
+# Install: pip install -r requirements_clean.txt
 
-# Google Gemini & Embeddings (miễn phí theo quota)
-google-generativeai>=0.8.0
-langchain-google-genai>=1.0.0
+# LangChain Core
+langchain>=0.3.7,<0.4.0
+langchain-core>=0.3.15,<0.4.0
+langchain-community>=0.3.5,<0.4.0
+langchain-text-splitters>=0.3.0,<0.4.0
+langchain-experimental>=0.3.0,<0.4.0
 
-# Vector store & dữ liệu
-chromadb>=0.5.5
+# LangGraph
+langgraph>=0.2.45,<0.3.0
+langgraph-checkpoint>=2.0.0,<3.0.0
+
+# Vector Store
+chromadb>=0.5.5,<0.6.0
+
+# Google Gemini
+google-generativeai>=0.7.0,<0.8.0
+langchain-google-genai>=2.0.0,<3.0.0
+
+# HuggingFace (for embeddings - compatible with LangChain 0.3.x)
+# Note: langchain-huggingface 0.3.x works with langchain-core 0.3.x
+langchain-huggingface>=0.3.0,<1.0.0
+sentence-transformers>=2.2.0,<3.0.0
+huggingface-hub>=0.20.0,<1.0.0
+
+# Utilities
+python-dotenv>=1.0.0,<2.0.0
 pandas>=2.0.0
 numpy>=1.24.0
 
