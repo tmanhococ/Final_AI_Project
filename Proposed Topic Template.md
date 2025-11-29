@@ -1,69 +1,48 @@
-> ℹ️ **Note:**  
-> This template is created for students in the "Introduction to Artificial Intelligence" course at VNU-HUS (which I have participated in as a Lecturer) to propose their ideas for a mini-project in the Introduction to AI course. The content is provided in both English and Vietnamese.  
->  
-> ℹ️ **Chú ý:**  
-> Mẫu này được tạo ra cho sinh viên học phần "Nhập môn Trí tuệ Nhân tạo" tại VNU-HUS (mà tôi đã tham gia với vai trò Giảng viên) để đề xuất ý tưởng cho mini-project trong học phần này. Nội dung được cung cấp bằng cả tiếng Anh và tiếng Việt.  
->  
-> ✍️ **Instructions:** Fill in the details below in *one* language (English or Vietnamese), then **delete the other version** before submission. Please also **delete this remark and instruction section**.  
->  
-> ✍️ **Hướng dẫn:** Điền thông tin dự án bên dưới bằng *một* ngôn ngữ (Tiếng Anh hoặc Tiếng Việt), sau đó **xóa phiên bản còn lại** trước khi nộp. Đồng thời hãy **xóa phần ghi chú và hướng dẫn này**.  
->
-> 🔗 [🇬🇧 English Version](#-english-version) | 🔗 [🇻🇳 Phiên bản Tiếng Việt](#-phiên-bản-tiếng-việt)
-
------
-
-## 🇬🇧 English Version
-
-### 🏷️ Group Name
-Your group name goes here.
-
-### 📝 Project Title
-Title of your project goes here.
-
-### 👥 Team Members
-| 👤 Name 🧑‍🎓     | 🆔 Student ID 🧾     | 🐙 GitHub Username 🔗 |
-|------------------|---------------------|-----------------------|
-| [Your Name 1]    | [Your Student ID 1] | [Your GitHub Username 1] |
-| [Your Name 2]    | [Your Student ID 2] | [Your GitHub Username 2] |
-| [Your Name 3]    | [Your Student ID 3] | [Your GitHub Username 3] |
-
-### 🗒️ Summary
-Briefly describe your project (approx. 200–300 characters).
-
-### 🎯 Background
-Which problems will your project solve? What motivations led you to choose this topic? Why is this topic important or interesting?
-
-### 🚀 Plan
-How do you plan to carry out your project? What are the main steps or milestones? (e.g., data collection, modeling, evaluation, demo)
-
-### 📚 References
-List any references, papers, libraries, or datasets you used when deciding the topic.
-
------
-
 ## 🇻🇳 Phiên bản Tiếng Việt
 
 ### 🏷️ Tên nhóm
-Tên nhóm của bạn.
+Nhóm 12 AEYEPRO
 
 ### 📝 Tên dự án
-Tên dự án của bạn.
+App trợ lý theo dõi và tư vấn sức khỏe kỹ thuật số
 
 ### 👥 Thành viên nhóm
 | 👤 Họ và tên 🧑‍🎓  | 🆔 Mã sinh viên 🧾 | 🐙 Tên GitHub 🔗     |
 |------------------|---------------------|---------------------|
-| [Tên bạn 1]      | [Mã sinh viên 1]    | [Tên GitHub 1]      |
-| [Tên bạn 2]      | [Mã sinh viên 2]    | [Tên GitHub 2]      |
-| [Tên bạn 3]      | [Mã sinh viên 3]    | [Tên GitHub 3]      |
+| Lê Tiến Mạnh      | 23001535    | tmanhococ      |
+| Trần Minh Đức      | 23001518    | tranminhduc9      |
+| Hoàng Văn Phú      | 23001548    | phuhoangg      |
 
 ### 🗒️ Tóm tắt
-Mô tả ngắn gọn về dự án của bạn (khoảng 200–300 ký tự).
+Hệ thống cung cấp cảnh báo kịp thời khi phát hiện dấu hiệu mệt mỏi, đồng thời lưu trữ dữ liệu để phân tích dài hạn. Chatbot tích hợp dựa trên kiến trúc Retrieval-Augmented Generation (RAG) có khả năng truy vấn lịch sử, đưa ra thống kê, nhận định và gợi ý cá nhân hóa dựa trên thói quen thực tế của người dùng. Về mặt kỹ thuật, AEYEPro ứng dụng OpenCV cho xử lý hình ảnh và MediaPipe cho việc lấy các điểm dữ liệu trên cơ thể người, LangChain và LangGraph kết hợp Vector Store ChromaDB cho RAG và Gemini API cho mô hình ngôn ngữ, triển khai dưới dạng ứng dụng desktop để đảm bảo hiệu suất, bảo mật và vận hành liên tục.
 
 ### 🎯 Bối cảnh
-Dự án của bạn sẽ giải quyết vấn đề gì? Động lực nào khiến bạn chọn chủ đề này? Tại sao chủ đề này quan trọng hoặc thú vị?
+Trong thực tế, nhiều người gặp khó khăn trong việc duy trì tư thế đúng và kiểm soát dấu hiệu mệt mỏi mắt khi làm việc lâu với màn hình. Giải pháp hiện tại thường chỉ cung cấp cảnh báo đơn giản, thiếu khả năng phân tích dữ liệu lịch sử và gợi ý cá nhân hóa.
+
+AEYEPro hướng tới việc khắc phục những hạn chế này bằng một hệ thống theo dõi thời gian thực. Hệ thống ghi nhận dữ liệu sinh lý và hành vi, phân tích tư thế và mức độ mệt mỏi, đồng thời cung cấp thông tin phản hồi và khuyến nghị cá nhân hóa dựa trên dữ liệu thu thập được. Cách tiếp cận này không chỉ giúp người dùng phát hiện sớm các vấn đề sức khỏe mà còn hỗ trợ điều chỉnh thói quen làm việc, nâng cao hiệu quả và giảm nguy cơ các rối loạn cơ xương khớp hoặc thị giác khi phải tiếp xúc liên tục với màn hình máy tính.
 
 ### 🚀 Kế hoạch
-Bạn dự định thực hiện dự án như thế nào? Các bước chính sẽ thực hiện là gì? (ví dụ: thu thập dữ liệu, xây dựng mô hình, đánh giá, demo)
+Dự án được thực hiện theo các bước chính sau:
+
+1. **Đặt vấn đề và nghiên cứu**: Xác định các vấn đề sức khỏe khi làm việc lâu với màn hình, đặt câu hỏi nghiên cứu về phương pháp theo dõi và tư vấn hiệu quả.
+
+2. **Tìm giải pháp**: Nghiên cứu các công nghệ phù hợp (OpenCV, MediaPipe, RAG, LLM) và xác định kiến trúc hệ thống tối ưu.
+
+3. **Lên ý tưởng và thiết kế module**: Thiết kế các module chính bao gồm:
+   - Module theo dõi thời gian thực (camera, xử lý ảnh)
+   - Module phát hiện tư thế và mệt mỏi
+   - Module lưu trữ và phân tích dữ liệu
+   - Module chatbot RAG với khả năng tư vấn cá nhân hóa
+
+4. **Triển khai và thử nghiệm**: Xây dựng từng module, tích hợp các thành phần và tiến hành thử nghiệm ban đầu với người dùng thực tế.
+
+5. **Tối ưu và kiểm thử**: Đánh giá hiệu suất, độ chính xác của hệ thống, tối ưu hóa thuật toán và giao diện người dùng, thực hiện kiểm thử toàn diện trước khi hoàn thiện.
 
 ### 📚 Tài liệu tham khảo
-Liệt kê các tài liệu tham khảo, bài báo, thư viện hoặc tập dữ liệu bạn đã sử dụng khi quyết định chủ đề dự án.
+- OpenCV Documentation: https://docs.opencv.org/
+- MediaPipe Documentation: https://developers.google.com/mediapipe
+- LangChain Documentation: https://python.langchain.com/
+- ChromaDB Documentation: https://docs.trychroma.com/
+- Gemini API Documentation: https://ai.google.dev/
+- Các bài báo khoa học về phát hiện mệt mỏi và tư thế cơ thể
+- Nghiên cứu về RAG (Retrieval-Augmented Generation) trong ứng dụng chatbot y tế
