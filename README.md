@@ -4,11 +4,11 @@
 
 [Các thông tin này cũng cần được đưa vào báo cáo PDF và slide trình bày.]
 
-* **📚 Môn học:** [Mã môn học] - Nhập môn Trí tuệ Nhân tạo  
-* **📅 Học kỳ:** [Học kỳ - Năm học] (ví dụ: Học kỳ 1 - 2025-2026, v.v.)  
+* **📚 Môn học:** MAT3518 - Nhập môn Trí tuệ Nhân tạo  
+* **📅 Học kỳ:** Học kỳ 1 - 2025-2026 
 * **🏫 Trường:** VNU-HUS (Đại học Quốc gia Hà Nội - Trường Đại học Khoa học Tự nhiên)  
 * **📝 Tiêu đề:** App trợ lý theo dõi và tư vấn sức khỏe kỹ thuật số  
-* **📅 Ngày nộp:** [Ngày nộp] (ví dụ: 30/06/2025)  
+* **📅 Ngày nộp:** 30/11/2025 
 * **📄 Báo cáo PDF:** 📄 [Liên kết tới báo cáo PDF trong kho lưu trữ này]  
 * **🖥️ Slide thuyết trình:** 🖥️ [Liên kết tới slide thuyết trình trong kho lưu trữ này]  
 * **📂 Kho lưu trữ:** 📁 Bao gồm mã nguồn, dữ liệu và tài liệu (hoặc dẫn link ngoài nếu cần)
@@ -24,8 +24,6 @@
 ---
 
 ## 📑 Tổng quan cấu trúc báo cáo
-
-> ℹ️ **Lưu ý:** Đây là mẫu chung. Hãy điều chỉnh theo yêu cầu dự án.
 
 ### Chương 1: Giới thiệu
 **📝 Tóm tắt dự án**
@@ -76,13 +74,13 @@
 
 ### ✅ Danh sách kiểm tra trước khi nộp
 - [X] ✅ Đánh dấu X vào ô để xác nhận hoàn thành  
-- [ ] ✍️ Điền đầy đủ các mục trong mẫu README này  
+- [X] ✍️ Điền đầy đủ các mục trong mẫu README này  
 - [ ] 📄 Hoàn thiện báo cáo PDF chi tiết theo cấu trúc trên  
-- [ ] 🎨 Tuân thủ định dạng và nội dung theo hướng dẫn giảng viên  
-- [ ] ➕ Thêm các mục riêng của dự án nếu cần  
+- [X] 🎨 Tuân thủ định dạng và nội dung theo hướng dẫn giảng viên  
+- [X] ➕ Thêm các mục riêng của dự án nếu cần  
 - [ ] 🔍 Kiểm tra lại ngữ pháp, diễn đạt và độ chính xác kỹ thuật  
 - [ ] ⬆️ Tải lên báo cáo PDF, slide trình bày và mã nguồn  
-- [ ] 🧩 Đảm bảo tất cả mã nguồn được tài liệu hóa đầy đủ với bình luận và docstring  
+- [X] 🧩 Đảm bảo tất cả mã nguồn được tài liệu hóa đầy đủ với bình luận và docstring  
 - [ ] 🔗 Kiểm tra các liên kết và tài liệu tham khảo hoạt động đúng
 
 ### 🏆 Tiêu chí đánh giá Bài tập nhóm
@@ -99,3 +97,4 @@ Xem 📄 [Rubrics.md](Rubrics.md) để biết chi tiết về tiêu chí đánh
 ---
 
 *Mẫu cập nhật lần cuối: 🗓️ Tháng 7/2025*
+
