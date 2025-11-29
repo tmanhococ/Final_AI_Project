@@ -1,0 +1,66 @@
+1. Mạng lưới tri thức (Knowledge Graph)
+Trước khi đi vào danh sách cụ thể, hãy hình dung "Chăm sóc mắt tại Việt Nam" là một đỉnh trung tâm trong mạng đồ thị, có các cạnh liên kết mạnh với các đỉnh kiến thức sau:
+
+Đỉnh "Y tế công cộng" (Public Health): Liên kết với các bệnh viện công đầu ngành (Bệnh viện Mắt TW, Mắt TP.HCM). Đặc điểm: Chuyên môn sâu nhất, chi phí thấp, nhưng quá tải.
+
+Đỉnh "Kinh tế Y tế" (Health Economics): Liên kết với khối tư nhân/quốc tế. Đặc điểm: Dịch vụ 5 sao, quy trình nhanh, thiết bị tối tân, nhưng chi phí cao.
+
+Đỉnh "Quang học & Vật lý" (Optics & Physics): Nền tảng của các phương pháp phẫu thuật khúc xạ (Lasik, Relex Smile, Phaco) mà các bác sĩ sử dụng.
+
+Đỉnh "Thần kinh học" (Neurology): Mối liên hệ mật thiết giữa mắt và não bộ (thần kinh nhãn khoa), nơi các giáo sư đầu ngành thường tập trung nghiên cứu.
+
+2. Phân tích & Đánh giá (Bloom Level 4 & 5)
+Dưới đây là thông tin chi tiết được phân nhóm theo địa lý và đánh giá dựa trên tiêu chí: Chuyên môn (Expertise) vs. Trải nghiệm dịch vụ (Service Experience).
+
+Khu vực Hà Nội
+Bệnh viện Mắt Trung ương (Vietnam National Institute of Ophthalmology)
+
+Liên kết: Đỉnh cao nhất về chuyên môn nhãn khoa miền Bắc. Nơi tập trung các ca bệnh khó nhất từ các tỉnh chuyển về.
+
+Đánh giá (Evaluation): Nếu bạn cần xử lý các ca bệnh phức tạp (đáy mắt, chấn thương nặng), đây là lựa chọn số 1 bất chấp việc dịch vụ có thể chưa hoàn hảo do quá tải.
+
+Địa chỉ: 85 P. Bà Triệu, Nguyễn Du, Hai Bà Trưng, Hà Nội.
+
+Bác sĩ tiêu biểu: PGS.TS Lê Xuân Cung (Chuyên gia giác mạc & bề mặt nhãn cầu), PGS.TS Hà Huy Tài (Chuyên gia lác/nhược thị - đã nghỉ hưu nhưng có phòng khám riêng).
+
+Bệnh viện Mắt Quốc tế Nhật Bản (JIEH)
+
+Liên kết: Sự giao thoa giữa quy trình y tế Nhật Bản và bác sĩ Việt Nam.
+
+Đánh giá: Phù hợp cho phẫu thuật khúc xạ (cận/viễn/loạn) hoặc đục thủy tinh thể nếu bạn ưu tiên sự minh bạch, sạch sẽ và quy trình chuẩn xác, ít chờ đợi.
+
+Địa chỉ: 32 Phó Đức Chính, Trúc Bạch, Ba Đình, Hà Nội.
+
+Bác sĩ tiêu biểu: TS.BS Vũ Anh Tuấn (Giám đốc chuyên môn), TS.BS Nguyễn Thu Hương.
+
+Khu vực TP. Hồ Chí Minh
+Bệnh viện Mắt TP.HCM
+
+Liên kết: Trung tâm chỉ đạo tuyến về mắt cho toàn miền Nam.
+
+Đánh giá: Tương tự Mắt TW ở Hà Nội, đây là "thành trì" chuyên môn. Nơi đây sở hữu nhiều "bàn tay vàng" trong phẫu thuật Phaco và Relex Smile. Tuy nhiên, bạn cần chuẩn bị tâm lý chờ đợi hoặc đăng ký khám dịch vụ VIP để tiết kiệm thời gian.
+
+Địa chỉ: 280 Điện Biên Phủ, Phường 7, Quận 3, TP.HCM.
+
+Bác sĩ tiêu biểu: PGS.TS.BS Võ Thị Hoàng Lan, BSCKII Trịnh Bạch Tuyết (Chuyên gia cườm nước - Glaucoma).
+
+Trung tâm Mắt Hải Yến (Hai Yen Eye Care)
+
+Liên kết: Mô hình "Boutique Hospital" - tập trung vào cá nhân hóa điều trị.
+
+Đánh giá: Đây là ví dụ điển hình cho xu hướng bác sĩ đầu ngành ra mở riêng để kiểm soát chất lượng dịch vụ. Chi phí cao nhưng đổi lại là sự an tâm tuyệt đối về tư vấn kỹ lưỡng.
+
+Địa chỉ: 31A Nguyễn Đình Chiểu, Đa Kao, Quận 1, TP.HCM.
+
+Lãnh đạo: PGS.TS.BS Trần Hải Yến (Nguyên Phó GĐ Bệnh viện Mắt TP.HCM - Chuyên gia hàng đầu về khúc xạ).
+
+Bệnh viện Mắt Cao Thắng
+
+Liên kết: Bệnh viện chuyên khoa mắt tư nhân lâu đời, đạt chuẩn JCI (Mỹ).
+
+Đánh giá: Sự cân bằng tốt giữa chất lượng chuyên môn và dịch vụ khách hàng.
+
+Địa chỉ: 135B Trần Bình Trọng, Phường 2, Quận 5, TP.HCM.
+
+3. Bản đồ trực quan
+Tôi sẽ hiển thị vị trí các bệnh viện uy tín này để bạn hình dung khoảng cách địa lý.
