@@ -1,117 +1,3 @@
-> ⚠️ **Remark:** This repository is created for the "Introduction to Artificial Intelligence" course at VNU-HUS which I have participated in as a Lecturer. It serves as a template for students to submit their mini-project reports and presentations. The content is provided in both English and Vietnamese.  
->
-> ⚠️ **Ghi chú:** Kho lưu trữ này được xây dựng để phục vụ cho môn "Nhập môn Trí tuệ Nhân tạo" tại VNU-HUS mà tôi tham gia với vai trò Giảng viên. Đây là một mẫu để sinh viên nộp báo cáo và slide trình bày bài tập nhóm. Nội dung được cung cấp bằng cả tiếng Anh và tiếng Việt.  
->
-> 📝 **Instructions:** Fill in the details below in *one* language (English or Vietnamese), then **delete the other version** before submission. Please also **delete this remark and instruction section**.  
->
-> 📝 **Hướng dẫn:** Điền thông tin dự án bên dưới bằng *một* ngôn ngữ (Tiếng Anh hoặc Tiếng Việt), sau đó **xóa phiên bản còn lại** trước khi nộp. Đồng thời hãy **xóa phần ghi chú và hướng dẫn này**.  
-
-[🇬🇧 English](#-introduction-to-ai-mini-project-report) | [🇻🇳 Vietnamese](#-báo-cáo-bài-tập-nhóm-môn-trí-tuệ-nhân-tạo)
-
----
-
-# 🤖 Introduction to AI Mini-Project Report
-
-**📋 Project Information:**
-
-[This information should also be included in the PDF report and presentation slides.]
-
-* **📚 Course:** [Course Code] - Introduction to Artificial Intelligence  
-* **📅 Term:** [Term - Year] (e.g., Term 1 - 2025-2026)  
-* **🏫 Institution:** VNU-HUS (Vietnam National University - Hanoi University of Science)  
-* **📝 Project Title:** [Your Project Title Here]  
-* **📅 Submission Date:** [Submission Date] (e.g., 30/06/2025)  
-* **📄 PDF Report:** 📄 [Link to the PDF report in this repository]  
-* **🖥️ Presentation Slides:** 🖥️ [Link to the presentation slides in this repository]  
-* **📂 Repository:** 📁 Include code, data, and docs in this repo (or provide external links)
-
-**👥 Team Members:**
-
-| 👤 Name           | 🆔 Student ID        | 🐙 GitHub Username   | 🛠️ Contribution |
-|------------------|---------------------|---------------------|----------------------|
-| [Your Name 1]    | [Your Student ID 1] | [Your GitHub Username 1] | [Your Contribution 1] |
-| [Your Name 2]    | [Your Student ID 2] | [Your GitHub Username 2] | [Your Contribution 2] |
-| [Your Name 3]    | [Your Student ID 3] | [Your GitHub Username 3] | [Your Contribution 3] |
-
----
-
-## 📑 Report Structure Overview
-
-> ℹ️ **Note:** This is a general template. Please adjust based on your specific project requirements.
-
-### Chapter 1: Introduction
-**📝 Executive Summary**
-   - ✨ Brief overview of the project, main objectives, and key results
-
-**❓ Problem Statement**
-   - 📌 Description of the problem addressed and its relevance
-
-### Chapter 2: Methodology & Implementation
-**⚙️ Methodology**
-   - 🔍 Description of the approach, theoretical foundation, algorithms, and data used
-
-**💻 Implementation**
-   - 🧩 Description of the system, tools, and code structure
-
-### Chapter 3: Results & Analysis
-**📊 Results & Discussion**
-   - 📈 Main findings, performance metrics, and analysis
-
-### Chapter 4: Conclusion
-**✅ Conclusion & Future Work**
-   - 🔭 Summary of contributions and suggestions for improvement
-
-### References & Appendices
-**📚 References**
-   - 🔗 List of cited papers, books, and resources
-
-**📎 Appendices** *(Optional)*
-   - 📎 Additional results, code snippets, or user manual
-
----
-
-## 📝 Submission Guidelines
-
-### 📋 Requirements
-- **Format:** 
-  + 🖨️ The report must be typed and clearly formatted, exported as a PDF (recommended to use LaTeX).  
-  + 🔁 A copy of the report must be stored in the GitHub repository corresponding to the project, two submitted on Canvas (one for the instructor and one for the TA (if any)), and two printed copies (one for the instructor and one for the TA (if any)). The same for presentation slides (no printed copies required).
-- **Repository:** 🗂️ Include PDF report, slides, and all relevant code and materials. (If the size exceeds GitHub's limit, consider uploading to other platforms like Google Drive or Dropbox and put the link to the documentation)
-- **Team Work:** 🤝 Ensure to acknowledge contributions from all team members
-- **Code Documentation:** All code must be well-documented with:
-  + 🧾 Clear comments explaining complex logic and algorithms  
-  + 🧪 Function/method docstrings describing parameters, return values, and purpose  
-  + 📘 README files for code modules explaining setup and usage  
-  + 📝 Inline comments for non-obvious code sections
-
-### ✅ Checklist Before Submission
-- [X] ✅ Put X in the brackets to mark as complete  
-- [ ] ✍️ Fill out all sections in this README template  
-- [ ] 📄 Complete detailed PDF report following the structure above  
-- [ ] 🎨 Follow instructor's formatting and content guidelines  
-- [ ] ➕ Add project-specific sections as necessary  
-- [ ] 🔍 Proofread for clarity, grammar, and technical accuracy  
-- [ ] ⬆️ Upload PDF report, presentation slides, and code  
-- [ ] 🧩 Ensure all code is properly documented with comments and docstrings  
-- [ ] 🔗 Verify all links and references work correctly
-
-### 🏆 Evaluation Criteria
-
-See 📄 [Rubrics.md](Rubrics.md) for details on the mini-project evaluation criteria, including maximum points for each criterion and descriptions of performance levels (Excellent, Good, Needs Improvement).
-
-### 📚 Useful Links
-
-- 📄 [Report Template](LaTeX%20Template/main-en.tex) - A LaTeX template for writing reports  
-- 📘 [Sổ tay dùng LaTeX](https://vietex.blog.fc2.com/blog-entry-516.html) - A guide for using LaTeX in Vietnamese  
-- 🔎 [Một số phương pháp tải bài báo khoa học](https://hoanganhduc.github.io/misc/m%E1%BB%99t-s%E1%BB%91-ph%C6%B0%C6%A1ng-ph%C3%A1p-t%E1%BA%A3i-b%C3%A0i-b%C3%A1o-khoa-h%E1%BB%8Dc/) - A guide on methods to access scientific papers  
-- 📰 [AI Vietnam Blog](https://aivietnam.edu.vn/blog) - A Vietnamese blog with resources and articles on AI
-
----
-
-*Template last updated: 🗓️ July 2025*
-
------
-
 # 🤖 Báo cáo Bài tập nhóm Môn Trí tuệ Nhân tạo
 
 **📋 Thông tin:**
@@ -121,7 +7,7 @@ See 📄 [Rubrics.md](Rubrics.md) for details on the mini-project evaluation cri
 * **📚 Môn học:** [Mã môn học] - Nhập môn Trí tuệ Nhân tạo  
 * **📅 Học kỳ:** [Học kỳ - Năm học] (ví dụ: Học kỳ 1 - 2025-2026, v.v.)  
 * **🏫 Trường:** VNU-HUS (Đại học Quốc gia Hà Nội - Trường Đại học Khoa học Tự nhiên)  
-* **📝 Tiêu đề:** [Tên dự án của bạn]  
+* **📝 Tiêu đề:** App trợ lý theo dõi và tư vấn sức khỏe kỹ thuật số  
 * **📅 Ngày nộp:** [Ngày nộp] (ví dụ: 30/06/2025)  
 * **📄 Báo cáo PDF:** 📄 [Liên kết tới báo cáo PDF trong kho lưu trữ này]  
 * **🖥️ Slide thuyết trình:** 🖥️ [Liên kết tới slide thuyết trình trong kho lưu trữ này]  
@@ -131,9 +17,9 @@ See 📄 [Rubrics.md](Rubrics.md) for details on the mini-project evaluation cri
 
 | 👤 Họ và tên      | 🆔 Mã sinh viên     | 🐙 Tên GitHub        | 🛠️ Đóng góp  |
 |------------------|--------------------|----------------------|----------------------|
-| [Tên bạn 1]      | [Mã SV 1]          | [GitHub 1]           | [Đóng góp 1]         |
-| [Tên bạn 2]      | [Mã SV 2]          | [GitHub 2]           | [Đóng góp 2]         |
-| [Tên bạn 3]      | [Mã SV 3]          | [GitHub 3]           | [Đóng góp 3]         |
+| Lê Tiến Mạnh      | 23001535          | tmanhococ           | Leader, làm chatbot         |
+| Trần Minh Đức      | 23001518          | tranminhduc9           | Frontend Dev, triển khai hệ thống         |
+| Hoàng Văn Phú      | 23001548          | phuhoangg           | Làm backend theo dõi, xử lý ảnh realtime         |
 
 ---
 
@@ -148,18 +34,19 @@ See 📄 [Rubrics.md](Rubrics.md) for details on the mini-project evaluation cri
 **❓ Bài toán đặt ra**
    - 📌 Mô tả vấn đề giải quyết và ý nghĩa thực tiễn
 
-### Chương 2: Phương pháp & Triển khai
+### Chương 2: Phương pháp
 **⚙️ Phương pháp**
    - 🔍 Mô tả cách tiếp cận, cơ sở lý thuyết, thuật toán và dữ liệu sử dụng
 
+### Chương 3: Triển khai
 **💻 Triển khai**
    - 🧩 Mô tả hệ thống, công cụ và cấu trúc mã nguồn
 
-### Chương 3: Kết quả & Phân tích
+### Chương 4: Kết quả & Phân tích
 **📊 Kết quả & Thảo luận**
    - 📈 Các phát hiện chính, chỉ số đánh giá và phân tích
 
-### Chương 4: Kết luận
+### Chương 5: Kết luận
 **✅ Kết luận & Hướng phát triển**
    - 🔭 Tổng kết đóng góp và đề xuất cải tiến
 
