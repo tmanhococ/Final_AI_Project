@@ -19,6 +19,7 @@ from typing import Any, Dict, List
 import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+# Dùng langchain_community.vectorstores.Chroma để tương thích với LangChain 0.3.x
 from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage
 
@@ -146,14 +147,14 @@ def test_csv_analyst_node_with_real_summary() -> None:
 
     state: Dict[str, Any] = {
         "sub_queries": ["Hãy cho tôi biết trung bình duration_minutes là bao nhiêu?"],
-        "context": [],
+        "csv_context": [],  # Đổi từ "context" sang "csv_context"
     }
     new_state = csv_analyst_node(state, agent)
 
     print("csv_analyst_node sub_queries:", state["sub_queries"])
-    print("csv_analyst_node new context:", new_state["context"])
+    print("csv_analyst_node new csv_context:", new_state["csv_context"])
 
-    assert len(new_state["context"]) >= 1
+    assert len(new_state["csv_context"]) >= 1  # Đổi từ "context" sang "csv_context"
 
 
 # ===== Test cho retriever_node (medical_docs) =====
@@ -161,18 +162,31 @@ def test_csv_analyst_node_with_real_summary() -> None:
 
 def test_medical_retriever_node_with_real_docs() -> None:
     CHATBOT_CONFIG.validate()
-    vs = build_or_load_medical_vector_store(CHATBOT_CONFIG, force_rebuild=False)
+    # Thử dùng HuggingFace embeddings, nếu không có thì dùng Google embeddings
+    try:
+        vs = build_or_load_medical_vector_store(
+            CHATBOT_CONFIG,
+            force_rebuild=False,
+            use_huggingface=True,  # Thử HuggingFace trước
+        )
+    except ImportError:
+        # Fallback: dùng Google embeddings nếu HuggingFace không có
+        vs = build_or_load_medical_vector_store(
+            CHATBOT_CONFIG,
+            force_rebuild=False,
+            use_huggingface=False,  # Dùng Google embeddings
+        )
 
     state: Dict[str, Any] = {
         "sub_queries": ["hội chứng mỏi mắt do sử dụng máy tính CVS"],
-        "context": [],
+        "doc_context": [],  # Đổi từ "context" sang "doc_context"
     }
     new_state = medical_retriever_node(state, vs)
 
     print("medical_retriever_node sub_queries:", state["sub_queries"])
-    print("medical_retriever_node new context:", new_state["context"])
+    print("medical_retriever_node new doc_context:", new_state["doc_context"])
 
-    assert len(new_state["context"]) >= 1
+    assert len(new_state["doc_context"]) >= 1  # Đổi từ "context" sang "doc_context"
 
 
 # ===== Test cho grader_node =====
@@ -219,6 +233,8 @@ def test_generator_and_rewriter_nodes_with_real_llm() -> None:
     print("generator_node generation:", gen_state["generation"])
     assert isinstance(gen_state["generation"], str) and len(gen_state["generation"]) > 0
 
+    # Thêm reformulated_question vào gen_state trước khi gọi rewriter_node
+    gen_state["reformulated_question"] = state["reformulated_question"]
     rew_state = rewriter_node(gen_state, llm)
     print("rewriter_node sub_queries:", rew_state["sub_queries"])
     print("rewriter_node retry_count:", rew_state["retry_count"])

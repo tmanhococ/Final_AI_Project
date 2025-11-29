@@ -26,24 +26,51 @@ StateDict = MutableMapping[str, object]
 
 
 def csv_analyst_node(state: StateDict, agent: SupportsInvoke) -> Dict[str, object]:
-    """Run CSV Pandas agent trên các sub_queries và append vào context."""
+    """Run CSV Pandas agent trên các sub_queries và tạo csv_context mới.
+    
+    QUAN TRỌNG: Node này RESET csv_context (không append vào context cũ) để tránh tích lũy
+    context qua nhiều lượt hỏi. Mỗi lần chạy, csv_context được tạo mới từ đầu.
+    
+    Parameters
+    ----------
+    state:
+        GraphState với field "sub_queries" chứa danh sách câu hỏi cần phân tích.
+    agent:
+        Pandas DataFrame Agent (có method .invoke()) để truy vấn CSV.
+    
+    Returns
+    -------
+    Dict[str, object]
+        {"csv_context": List[str]} - danh sách kết quả phân tích CSV (RESET, không append).
+    
+    Raises
+    ------
+    ValueError
+        Nếu sub_queries rỗng.
+    """
+    # Lấy danh sách sub_queries từ state
     sub_queries: List[str] = state.get("sub_queries", [])  # type: ignore[assignment]
     if not sub_queries:
         raise ValueError("csv_analyst_node requires non-empty 'sub_queries'.")
 
-    csv_context: List[str] = list(state.get("csv_context", []))  # type: ignore[assignment]
+    # RESET csv_context: tạo list mới thay vì append vào context cũ
+    csv_context: List[str] = []
 
+    # Xử lý từng sub_query
     for q in sub_queries:
         try:
-            # Dùng API .invoke mới thay vì run (run đã deprecated).
+            # Gọi agent để phân tích câu hỏi trên DataFrame
+            # Dùng API .invoke mới thay vì run (run đã deprecated)
             answer = agent.invoke({"input": q})  # type: ignore[arg-type]
-            # answer có thể là dict hoặc str tùy agent; ép về str để append.
+            
+            # Agent có thể trả về dict hoặc str tùy implementation
             if isinstance(answer, dict):
                 # Lấy output từ dict nếu có
                 output = answer.get("output", str(answer))
                 csv_context.append(str(output))
             else:
                 csv_context.append(str(answer))
+                
         except ValueError as e:
             # Xử lý lỗi parsing: Gemini thường trả lời đúng nội dung nhưng sai format ReAct
             error_msg = str(e)
@@ -62,10 +89,12 @@ def csv_analyst_node(state: StateDict, agent: SupportsInvoke) -> Dict[str, objec
                     csv_context.append(f"Kết quả phân tích: {error_msg}")
             else:
                 csv_context.append(f"Lỗi phân tích dữ liệu: {str(e)}")
+                
         except Exception as e:
-            # Xử lý các lỗi khác
+            # Xử lý các lỗi khác (network, API quota, etc.)
             csv_context.append(f"Lỗi khi truy vấn dữ liệu: {str(e)}")
 
+    # Trả về csv_context mới (RESET, không append vào state cũ)
     return {"csv_context": csv_context}
 
 
