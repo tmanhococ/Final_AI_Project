@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aeyepro_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount data directory to persist ChromaDB and logs
+      - ./src/data:/app/src/data
+      # Uncomment below for development (live code reload)
+      # - ./src:/app/src
+    env_file:
+      - src/chatbot/.env
+    environment:
+      # Ensure Python can find modules
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # Vision service (OPTIONAL - Only works reliably on Linux hosts)
+  # Uncomment below if you want to run vision in container (Linux only)
+  # vision:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: aeyepro_vision
+  #   volumes:
+  #     - ./src/data:/app/src/data
+  #   devices:
+  #     - /dev/video0:/dev/video0
+  #   env_file:
+  #     - src/chatbot/.env
+  #   environment:
+  #     - PYTHONPATH=/app
+  #   restart: unless-stopped
+  #   command: ["python", "src/vision/vision_app.py"]
+

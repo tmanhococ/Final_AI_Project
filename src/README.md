@@ -155,9 +155,306 @@ Mở trình duyệt và truy cập:
 
 ---
 
-### Phần 2: Chạy bằng Docker (Đang phát triển)
+### Phần 2: Chạy bằng Docker ⚠️ (Đang thử nghiệm)
 
-> ⚠️ **Lưu ý**: Tính năng Docker đang trong quá trình phát triển. Tài liệu sẽ được cập nhật sau.
+> **⚠️ CẢNH BÁO QUAN TRỌNG**: 
+> - Docker setup hiện tại đang trong **giai đoạn thử nghiệm** và có thể vẫn còn lỗi
+> - **Computer Vision module (vision/)** **KHÔNG được container hóa** vì:
+>   - Truy cập webcam từ container phức tạp và không ổn định trên Windows/macOS
+>   - MediaPipe và OpenCV yêu cầu nhiều system dependencies khó cấu hình trong container
+>   - Device passthrough chỉ hoạt động ổn định trên Linux
+> - **Chỉ Backend + Chatbot** được chạy trong Docker container
+> - **Vision module phải được cài đặt và chạy thủ công trên host machine** (xem hướng dẫn bên dưới)
+
+Docker cho phép bạn chạy **Backend API và Chatbot** trong môi trường container hóa, đảm bảo tính nhất quán giữa các môi trường khác nhau. Tuy nhiên, do hạn chế kỹ thuật, Computer Vision module vẫn cần chạy native trên host.
+
+#### Yêu cầu
+
+- **Docker Engine**: 20.10+ (cài đặt tại https://www.docker.com/get-started)
+- **Docker Compose**: 2.0+ (thường đi kèm với Docker Desktop)
+- **Disk Space**: ~3GB cho Docker image và dependencies
+- **Python trên host**: Để chạy Vision module (nếu cần sử dụng webcam)
+
+#### Bước 1: Tạo file cấu hình `.env`
+
+Tạo file `src/chatbot/.env` với nội dung (giống như Phần 1):
+
+```env
+# Google Gemini API Key (BẮT BUỘC)
+GOOGLE_API_KEY="YOUR_GOOGLE_API_KEY_HERE"
+
+# LangSmith Tracing (Tùy chọn)
+LANGCHAIN_TRACING_V2=false
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+LANGCHAIN_API_KEY="YOUR_LANGSMITH_KEY_HERE"
+LANGCHAIN_PROJECT="health-care-chatbot"
+```
+
+**Lưu ý**: Thay `YOUR_GOOGLE_API_KEY_HERE` bằng API key thật của bạn.
+
+#### Bước 2: Cài đặt Vision Module trên Host (Nếu cần sử dụng webcam)
+
+**QUAN TRỌNG**: Nếu bạn muốn sử dụng Computer Vision module (theo dõi mắt, tư thế), bạn **PHẢI** cài đặt các thư viện cho module này trên host machine (không phải trong container):
+
+```powershell
+# Từ thư mục src/
+cd D:\AI_Final\Final_AI_Project\src
+
+# Activate virtual environment (nếu chưa có thì tạo như Phần 1)
+.\.venv\Scripts\Activate.ps1
+
+# Cài đặt các thư viện cho Computer Vision
+pip install opencv-python>=4.8.0
+pip install mediapipe==0.10.14
+pip install numpy>=1.21.0
+pip install pandas>=1.3.0
+
+# Hoặc cài tất cả từ requirements.txt
+pip install -r requirements.txt
+```
+
+**Lý do**: Vision module cần truy cập trực tiếp vào webcam và các system libraries (OpenCV, MediaPipe) hoạt động tốt nhất khi chạy native trên host, không phải trong container.
+
+#### Bước 3: Build và chạy Backend + Chatbot với Docker Compose
+
+Từ **thư mục gốc của project** (nơi có `docker-compose.yml`):
+
+```bash
+# Build image và khởi động container (chỉ Backend + Chatbot)
+docker-compose up -d --build
+
+# Xem logs
+docker-compose logs -f backend
+
+# Dừng container
+docker-compose down
+```
+
+> **Lưu ý**: Container này chỉ chạy Backend API và Chatbot. Vision module sẽ chạy riêng trên host (nếu cần).
+
+#### Bước 4: Kiểm tra ứng dụng
+
+Sau khi container chạy (khoảng 30-60 giây để khởi động):
+
+- **Web Interface**: http://localhost:5000
+- **Backend API**: http://localhost:5000/api/...
+- **Health Check**: Container tự động kiểm tra sức khỏe mỗi 30 giây
+
+**Lưu ý**: 
+- Backend và Chatbot sẽ hoạt động bình thường
+- **Vision module sẽ KHÔNG hoạt động** nếu chỉ chạy container (cần cài đặt và chạy riêng trên host)
+
+**Hoặc chạy script test tự động** (từ thư mục project root):
+
+```bash
+# Linux/Mac:
+chmod +x test_docker.sh
+./test_docker.sh
+
+# Windows PowerShell:
+.\test_docker.ps1
+```
+
+Script sẽ tự động:
+- Kiểm tra Docker và Docker Compose đã cài đặt
+- Kiểm tra file `.env` và thư mục `data/`
+- Build và khởi động container
+- Kiểm tra health status
+- Test HTTP endpoint
+
+#### Các lệnh Docker hữu ích
+
+```bash
+# Xem logs real-time
+docker-compose logs -f backend
+
+# Xem trạng thái container
+docker-compose ps
+
+# Restart container
+docker-compose restart backend
+
+# Dừng và xóa container (giữ lại data volumes)
+docker-compose down
+
+# Dừng và xóa tất cả (bao gồm volumes - CẨN THẬN!)
+docker-compose down -v
+
+# Rebuild image từ đầu (không dùng cache)
+docker-compose build --no-cache
+
+# Vào trong container để debug
+docker-compose exec backend bash
+```
+
+#### Cấu trúc Docker
+
+```
+Project Root/
+├── Dockerfile              # Multi-stage build cho backend
+├── docker-compose.yml      # Orchestration cho services
+├── .dockerignore          # Files bỏ qua khi build
+└── src/
+    ├── chatbot/
+    │   └── .env           # Environment variables (không commit)
+    └── data/              # Mounted volume (persist ChromaDB)
+```
+
+#### Lưu trữ dữ liệu (Volumes)
+
+Docker Compose tự động mount thư mục `src/data/` vào container để:
+- **ChromaDB vector store** được lưu trữ bền vững
+- **CSV logs** được giữ lại khi container restart
+- **Medical documents** có sẵn cho RAG
+
+Dữ liệu được lưu tại `./src/data/` trên host machine.
+
+#### Chạy Vision Module (Trên Host - Không container hóa)
+
+**⚠️ QUAN TRỌNG**: Vision module **KHÔNG được khuyến nghị chạy trong container** vì:
+- Phức tạp và không ổn định khi truy cập webcam từ container
+- Yêu cầu nhiều system dependencies khó cấu hình
+- Chỉ hoạt động ổn định trên Linux với device passthrough
+
+**Cách chạy Vision module đúng**:
+
+1. **Cài đặt dependencies trên host** (đã làm ở Bước 2)
+
+2. **Chạy Vision module riêng biệt** (trong terminal mới):
+
+```powershell
+# Từ thư mục src/
+cd D:\AI_Final\Final_AI_Project\src
+
+# Activate virtual environment
+.\.venv\Scripts\Activate.ps1
+
+# Chạy Vision module (sẽ kết nối với Backend container qua API)
+python -m vision.vision_app
+```
+
+3. **Hoặc tích hợp Vision vào Backend** (nếu Backend chạy trên host, không phải container):
+
+```powershell
+# Chạy main.py trên host (không dùng Docker)
+python main.py
+```
+
+**Kiến trúc đề xuất**:
+- **Backend + Chatbot**: Chạy trong Docker container (ổn định, dễ deploy)
+- **Vision Module**: Chạy native trên host (truy cập webcam trực tiếp, ổn định hơn)
+- **Kết nối**: Vision module gửi dữ liệu tới Backend container qua HTTP/WebSocket API
+
+#### Troubleshooting Docker
+
+> **⚠️ Lưu ý**: Do đang trong giai đoạn thử nghiệm, có thể gặp các lỗi không mong đợi. Vui lòng báo cáo issues để chúng tôi cải thiện.
+
+##### Lỗi: `GOOGLE_API_KEY is not set` trong container
+
+**Giải pháp**: 
+- Kiểm tra file `src/chatbot/.env` tồn tại và có `GOOGLE_API_KEY`
+- Xác nhận Docker Compose đọc đúng file: `env_file: - src/chatbot/.env`
+- Kiểm tra logs: `docker-compose logs backend`
+
+##### Lỗi: `Port 5000 is already allocated`
+
+**Giải pháp**: 
+- Đóng ứng dụng khác đang dùng port 5000
+- Hoặc thay đổi port trong `docker-compose.yml`:
+  ```yaml
+  ports:
+    - "8080:5000"  # Host:Container
+  ```
+
+##### Lỗi: `Cannot connect to ChromaDB` hoặc `Permission denied`
+
+**Giải pháp**: 
+- Kiểm tra quyền thư mục `src/data/`:
+  ```bash
+  # Linux/Mac:
+  chmod -R 755 src/data/
+  
+  # Windows: Kiểm tra quyền trong Properties > Security
+  ```
+- Hoặc xóa và rebuild ChromaDB trong container:
+  ```bash
+  docker-compose exec backend rm -rf /app/src/data/chroma_db
+  ```
+
+##### Lỗi: `Package 'libgl1-mesa-glx' has no installation candidate` khi build
+
+**Giải pháp**: 
+- Đã được sửa trong Dockerfile (thay bằng `libgl1`)
+- Nếu vẫn gặp lỗi, thử rebuild: `docker-compose build --no-cache`
+
+##### Container không start hoặc crash ngay
+
+**Giải pháp**: 
+- Xem logs chi tiết: `docker-compose logs backend`
+- Kiểm tra health check: `docker-compose ps`
+- Rebuild image: `docker-compose build --no-cache`
+- Kiểm tra file `.env` có đúng format không
+
+##### Vision module không hoạt động khi chạy trong container
+
+**Giải pháp**: 
+- **Đây là hành vi mong đợi** - Vision module không được container hóa
+- Cài đặt và chạy Vision module trên host (xem Bước 2)
+- Vision module sẽ kết nối với Backend container qua API
+
+##### Image quá lớn hoặc build chậm
+
+**Giải pháp**: 
+- Dockerfile đã dùng multi-stage build để tối ưu
+- Lần đầu build sẽ chậm (download dependencies, ~5-10 phút)
+- Lần sau sẽ nhanh hơn nhờ Docker cache
+- Kiểm tra `.dockerignore` đã loại trừ các file lớn chưa
+
+#### Development Mode (Hot Reload)
+
+Để phát triển với code reload tự động, uncomment dòng này trong `docker-compose.yml`:
+
+```yaml
+volumes:
+  - ./src/data:/app/src/data
+  - ./src:/app/src  # Uncomment để mount source code
+```
+
+Sau đó restart: `docker-compose restart backend`
+
+> ⚠️ **Lưu ý**: 
+> - Development mode có thể chậm hơn do file I/O overhead
+> - Chỉ áp dụng cho Backend/Chatbot code, không áp dụng cho Vision module
+> - Vision module vẫn cần chạy trên host để truy cập webcam
+
+#### Tóm tắt kiến trúc Docker
+
+```
+┌─────────────────────────────────────────┐
+│  Docker Container (Backend + Chatbot)  │
+│  - Flask API Server                     │
+│  - LangGraph Chatbot                    │
+│  - ChromaDB Vector Store               │
+│  - Port: 5000                           │
+└─────────────────────────────────────────┘
+              ↑ HTTP/WebSocket
+              │
+┌─────────────────────────────────────────┐
+│  Host Machine (Vision Module)           │
+│  - OpenCV + MediaPipe                  │
+│  - Webcam Access                        │
+│  - Eye Tracking, Posture Analysis      │
+│  - Chạy native (không container)       │
+└─────────────────────────────────────────┘
+```
+
+**Lợi ích**:
+- Backend/Chatbot: Dễ deploy, nhất quán giữa các môi trường
+- Vision: Truy cập hardware trực tiếp, ổn định hơn
+
+**Hạn chế**:
+- Cần cài đặt Python dependencies trên host cho Vision module
+- Không thể chạy hoàn toàn trong container (do Vision module)
 
 ---
 

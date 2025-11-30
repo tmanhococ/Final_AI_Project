@@ -1,0 +1,68 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+**/*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables (will be mounted via env_file)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+docs/
+LaTeX Template/
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.csv.bak
+*.db.bak
+
+# Data - exclude large files but keep structure
+# ChromaDB will be created in container or mounted as volume
+src/data/chroma_db/
+src/data/*.csv
+src/data/realtime_*.csv
+
+# Keep data structure but allow medical_docs
+!src/data/medical_docs/
+
