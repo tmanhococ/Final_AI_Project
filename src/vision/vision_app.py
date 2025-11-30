@@ -178,7 +178,7 @@ class AEyeProVisionApp:
         """
         # Create session directory
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.session_dir = current_dir / "data"
+        self.session_dir = current_dir.parent / "data"
         self.session_dir.mkdir(parents=True, exist_ok=True)
 
         # Summary CSV file (1 record per session) - still handled here

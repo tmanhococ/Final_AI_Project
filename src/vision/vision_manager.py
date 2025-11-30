@@ -120,6 +120,11 @@ class VisionManager:
                 # Setup session logging for data collection
                 session_id = self.vision_app.setup_session_logging()
                 
+                # Start health data collector
+                if self.vision_app.health_collector:
+                    self.vision_app.health_collector.start_collection()
+                    print(f"[OK] Health Data Collector started - Session: {session_id}")
+                
                 # Set start_time for session tracking
                 self.vision_app.start_time = time.time()
                 self.vision_app.running = True
@@ -197,6 +202,12 @@ class VisionManager:
                 
                 # Shutdown vision application and release resources
                 if self.vision_app:
+                    # Stop health data collector
+                    if hasattr(self.vision_app, 'health_collector') and self.vision_app.health_collector:
+                        self.vision_app.health_collector.stop_collection()
+                        print("[OK] Health Data Collector stopped")
+                    
+                    # Call shutdown which will save summary and cleanup
                     if hasattr(self.vision_app, 'shutdown'):
                         self.vision_app.shutdown()
                     
