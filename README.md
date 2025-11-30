@@ -46,8 +46,16 @@
    - 🔭 Tổng kết đóng góp và đề xuất cải tiến
 
 ### Tài liệu tham khảo & Phụ lục
-**📚 Tài liệu tham khảo**
-   - 🔗 Danh sách bài báo, sách và nguồn tham khảo
+   ## 📚 Tài liệu tham khảo
+- OpenCV Documentation: https://docs.opencv.org/
+- MediaPipe Documentation: https://developers.google.com/mediapipe
+- LangChain Documentation: https://python.langchain.com/
+- ChromaDB Documentation: https://docs.trychroma.com/
+- Gemini API Documentation: https://ai.google.dev/
+- Các bài báo khoa học về phát hiện mệt mỏi và tư thế cơ thể
+- Các bài báo nghiên cứu về RAG (Retrieval-Augmented Generation) trong ứng dụng chatbot y tế
+
 ---
+
 
 
