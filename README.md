@@ -23,27 +23,61 @@
 
 ## 📑 Tổng quan cấu trúc báo cáo
 
-### Chương 1: Giới thiệu
-**📝 Tóm tắt dự án**
-   - ✨ Tổng quan ngắn gọn về dự án, mục tiêu chính và kết quả nổi bật
+---
 
-**❓ Bài toán đặt ra**
-   - 📌 Mô tả vấn đề giải quyết và ý nghĩa thực tiễn
+### Chương 1: Giới thiệu
+
+#### 📝 Tóm tắt dự án
+- **Tổng quan:** Dự án AEye Pro là hệ thống theo dõi và nâng cao sức khỏe người dùng khi sử dụng máy tính, tập trung vào các vấn đề như mỏi mắt và sai tư thế.
+- **Mục tiêu:** Ghi nhận chỉ số sinh lý/hành vi thời gian thực và cung cấp cảnh báo kịp thời, đồng thời xây dựng hệ thống trợ lý ảo giúp đưa ra các lời khuyên y tế kịp thời cho người dùng.
+- **Kết quả:** Xây dựng thành công ứng dụng web tích hợp Computer Vision để giám sát và Chatbot RAG để tư vấn cá nhân hóa.
+
+#### ❓ Bài toán đặt ra
+- **Vấn đề:** Làm việc lâu với máy tính gây mỏi mắt, đau cổ vai gáy, nhưng các giải pháp hiện tại thiếu khả năng phân tích dữ liệu lịch sử và gợi ý cá nhân hóa.
+- **Ý nghĩa:** Hệ thống giúp phát hiện sớm rủi ro sức khỏe, điều chỉnh thói quen làm việc và giảm nguy cơ rối loạn cơ xương khớp, đưa ra lời khuyên y tế hữu ích cho người dùng.
+
+---
 
 ### Chương 2: Phương pháp
-**⚙️ Phương pháp**
-   - 🔍 Mô tả cách tiếp cận, cơ sở lý thuyết, thuật toán và thư viện sử dụng
+
+#### ⚙️ Phương pháp
+- **Cách tiếp cận:** Chia thành 2 bài toán cốt lõi: Giám sát hành vi thời gian thực (Computer Vision) và Trợ lý ảo tư vấn sức khỏe (Adaptive RAG).
+- **Thuật toán thị giác:** Sử dụng MediaPipe (cân bằng hiệu năng/độ chính xác) để lấy điểm landmarks và OpenCV để xử lý ảnh nền tảng.  
+  Các chỉ số đánh giá gồm: EAR (mắt), độ lệch vai, góc gập/nghiêng đầu và một vài thông số suy ra từ EAR.
+- **Kiến trúc Chatbot:** Sử dụng Adaptive RAG với cơ chế định tuyến động (Routing) và tự sửa lỗi (Self-correction) thay vì RAG tuyến tính truyền thống.
+
+---
+
 ### Chương 3: Triển khai
-**💻 Triển khai**
-   - 🧩 Mô tả hệ thống, công cụ, kiến trúc và triển khai
+
+#### 💻 Triển khai
+- **Kiến trúc hệ thống:** Mô hình Client-Server tách biệt.  
+  Frontend (HTML/JS) hiển thị, Backend (Python/Flask) xử lý logic.
+- **Giao thức giao tiếp:** Sử dụng song song RESTful API (quản trị, cài đặt) và Socket.IO (truyền luồng video và chỉ số thời gian thực) để giảm độ trễ.
+- **Công cụ:** LangGraph quản lý luồng hội thoại có trạng thái, ChromaDB lưu trữ vector, và Pandas Agent để xử lý dữ liệu dạng bảng (CSV).
+
+---
 
 ### Chương 4: Kết quả & Phân tích
-**📊 Kết quả & Thảo luận**
-   - 📈 Các kết quả đã đạt được và thảo luận
+
+#### 📊 Kết quả & Thảo luận
+- **Thị giác máy tính:** Hoạt động ổn định, xử lý thời gian thực tốt.  
+  Nhận diện chính xác các trạng thái: khoảng cách quá gần/xa, tư thế ngồi sai (nghiêng/cúi đầu), và dấu hiệu buồn ngủ (EAR thấp).
+- **Chatbot:** Hoạt động hiệu quả theo 3 luồng:  
+  - Giao tiếp (phản hồi nhanh).
+  - Truy xuất kiến thức y khoa (chính xác từ tài liệu).
+  - Phân tích dữ liệu cá nhân (tính toán thống kê từ log người dùng).
+
+---
 
 ### Chương 5: Kết luận
-**✅ Kết luận & Hướng phát triển**
-   - 🔭 Tổng kết đóng góp và đề xuất cải tiến
+
+#### ✅ Kết luận & Hướng phát triển
+- **Tổng kết:** Đã hoàn thiện hệ thống đa luồng kết hợp AI tạo sinh và thị giác máy tính, giải quyết tốt bài toán tích hợp dữ liệu đa phương thức và có tính ứng dụng cao trong thực tế.
+- **Hướng phát triển:**  
+  - Ngắn hạn sẽ tối ưu UX (dashboard) và đóng gói bộ cài đặt.  
+  - Dài hạn hướng tới phát triển mobile, đồng bộ cloud và tích hợp mô hình ngôn ngữ nhỏ (SLM) để chạy offline giúp tăng khả năng bảo mật hệ thống.
+
 
 ### Tài liệu tham khảo & Phụ lục
    ## 📚 Tài liệu tham khảo
@@ -52,10 +86,11 @@
 - LangChain Documentation: https://python.langchain.com/
 - ChromaDB Documentation: https://docs.trychroma.com/
 - Gemini API Documentation: https://ai.google.dev/
-- Các bài báo khoa học về phát hiện mệt mỏi và tư thế cơ thể
-- Các bài báo nghiên cứu về RAG (Retrieval-Augmented Generation) trong ứng dụng chatbot y tế
+- Các bài báo khoa học về việc nghiên cứu các mô hình thị giác máy tính cho tác vụ giám sát mắt và tư thế.
+- Các bài báo nghiên cứu về RAG (Retrieval-Augmented Generation) trong ứng dụng chatbot y tế.
 
 ---
+
 
 
 
