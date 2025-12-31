@@ -1,0 +1,97 @@
+{
+    "description": "Manual test questions for RAG Chatbot covering all flows",
+    "created_at": "2025-12-31",
+    "author": "AI Evaluation Framework",
+    "test_cases": [
+        {
+            "question": "Xin chào",
+            "ground_truth": "Xin chào! Tôi là trợ lý sức khỏe AI. Tôi có thể giúp gì cho bạn?",
+            "evolution_type": "social",
+            "flow": "social_bot"
+        },
+        {
+            "question": "Bạn là ai?",
+            "ground_truth": "Tôi là trợ lý sức khỏe AI, được thiết kế để hỗ trợ theo dõi và tư vấn sức khỏe khi sử dụng máy tính.",
+            "evolution_type": "social",
+            "flow": "social_bot"
+        },
+        {
+            "question": "Cảm ơn bạn",
+            "ground_truth": "Không có gì! Rất vui được hỗ trợ bạn. Hãy liên hệ nếu cần thêm trợ giúp.",
+            "evolution_type": "social",
+            "flow": "social_bot"
+        },
+        {
+            "question": "Phân tích dữ liệu log sức khỏe của tôi",
+            "ground_truth": "Dựa trên dữ liệu log, bạn có tổng cộng nhiều phiên làm việc với các chỉ số EAR, khoảng cách, và số lần buồn ngủ được ghi nhận.",
+            "evolution_type": "csv",
+            "flow": "health + csv_node"
+        },
+        {
+            "question": "Thời gian trung bình của các phiên làm việc là bao nhiêu?",
+            "ground_truth": "Thời gian trung bình của các phiên làm việc được tính từ cột duration_minutes trong dữ liệu log.",
+            "evolution_type": "csv",
+            "flow": "health + csv_node"
+        },
+        {
+            "question": "Tôi có bao nhiêu lần buồn ngủ trong các phiên đo?",
+            "ground_truth": "Số lần buồn ngủ được tổng hợp từ cột drowsiness_events trong dữ liệu log của bạn.",
+            "evolution_type": "csv",
+            "flow": "health + csv_node"
+        },
+        {
+            "question": "Khoảng cách trung bình khi tôi làm việc với máy tính là bao nhiêu?",
+            "ground_truth": "Khoảng cách trung bình được tính từ cột avg_distance_cm trong dữ liệu log.",
+            "evolution_type": "csv",
+            "flow": "health + csv_node"
+        },
+        {
+            "question": "Hội chứng thị giác máy tính (CVS) là gì?",
+            "ground_truth": "Hội chứng thị giác máy tính (Computer Vision Syndrome - CVS) là tình trạng mỏi mắt và các triệu chứng liên quan do sử dụng máy tính, điện thoại hoặc các thiết bị điện tử trong thời gian dài. Triệu chứng bao gồm mỏi mắt, khô mắt, đau đầu, và nhìn mờ.",
+            "evolution_type": "retriever",
+            "flow": "health + retriever_node"
+        },
+        {
+            "question": "Triệu chứng mỏi mắt khi làm việc máy tính là gì?",
+            "ground_truth": "Triệu chứng mỏi mắt bao gồm: nhức mắt, khô mắt, nhìn mờ, đau đầu, và khó tập trung sau thời gian dài nhìn màn hình. Một số người còn có thể bị nhạy cảm với ánh sáng và cảm giác nặng mí mắt.",
+            "evolution_type": "retriever",
+            "flow": "health + retriever_node"
+        },
+        {
+            "question": "Làm sao để phòng ngừa mỏi mắt khi sử dụng máy tính?",
+            "ground_truth": "Để phòng ngừa mỏi mắt: áp dụng quy tắc 20-20-20 (mỗi 20 phút nhìn xa 20 feet trong 20 giây), điều chỉnh độ sáng màn hình, giữ khoảng cách phù hợp (50-70cm), và chớp mắt thường xuyên.",
+            "evolution_type": "retriever",
+            "flow": "health + retriever_node"
+        },
+        {
+            "question": "Tư thế ngồi đúng khi làm việc với máy tính như thế nào?",
+            "ground_truth": "Tư thế ngồi đúng: giữ lưng thẳng, vai thả lỏng, khuỷu tay gập 90 độ, màn hình ngang tầm mắt, và bàn chân đặt phẳng trên sàn.",
+            "evolution_type": "retriever",
+            "flow": "health + retriever_node"
+        },
+        {
+            "question": "Chỉ số EAR là gì?",
+            "ground_truth": "EAR (Eye Aspect Ratio) là tỷ lệ khía cạnh mắt, được tính dựa trên vị trí các điểm landmarks của mắt. Giá trị EAR thấp cho thấy mắt đang nhắm hoặc người dùng đang buồn ngủ.",
+            "evolution_type": "retriever",
+            "flow": "health + retriever_node"
+        },
+        {
+            "question": "Dựa vào log của tôi, tôi có nguy cơ mắc hội chứng mỏi mắt không?",
+            "ground_truth": "Dựa vào dữ liệu log và kiến thức y khoa về hội chứng thị giác máy tính, có thể đánh giá nguy cơ mỏi mắt của bạn dựa trên thời gian làm việc, khoảng cách màn hình, và số lần buồn ngủ.",
+            "evolution_type": "both",
+            "flow": "health + csv_node + retriever_node"
+        },
+        {
+            "question": "Phân tích chỉ số EAR của tôi và giải thích ý nghĩa của nó",
+            "ground_truth": "Chỉ số EAR (Eye Aspect Ratio) đo mức độ mở mắt. Giá trị EAR thấp cho thấy mắt đang nhắm hoặc buồn ngủ. Từ dữ liệu log sẽ phân tích EAR trung bình của bạn và đưa ra nhận xét.",
+            "evolution_type": "both",
+            "flow": "health + csv_node + retriever_node"
+        },
+        {
+            "question": "So sánh phiên làm việc dài nhất và ngắn nhất của tôi, phiên nào có sức khỏe mắt tốt hơn?",
+            "ground_truth": "Dựa trên dữ liệu log, có thể so sánh các phiên làm việc dựa trên duration, EAR, và drowsiness_events để đánh giá sức khỏe mắt.",
+            "evolution_type": "both",
+            "flow": "health + csv_node + retriever_node"
+        }
+    ]
+}

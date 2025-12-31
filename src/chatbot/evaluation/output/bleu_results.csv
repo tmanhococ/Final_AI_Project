@@ -1,0 +1,86 @@
+﻿question,ground_truth,answer,evolution_type,latency_ms,error
+Cận thị là gì?,"Trục nhãn cầu quá dài hoặc lực hội tụ của giác mạc/thủy tinh thể quá mạnh, khiến hình ảnh của vật ở xa hội tụ trước võng mạc.","Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]",simple,410.77184677124023,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]"
+Chi phí khám Ngoại thần kinh tại Bệnh viện Đa khoa Quốc tế Nam Sài Gòn là bao nhiêu?,300.000đ/lượt.,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]",simple,110.22591590881348,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]"
+Chữ F trong quy tắc FAST biểu thị triệu chứng gì?,"Méo miệng, mặt mất cân đối, nhân trung lệch sang một bên khi cười.","Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]",simple,120.87559700012207,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]"
+Bệnh lý nào thuộc bề mặt nhãn cầu được nhắc đến trong đoạn văn?,Viêm Kết Mạc và Các Tổn Thương Giác Mạc,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]",simple,103.73640060424805,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]"
+"Theo Bộ Y tế, thời lượng trung bình người dùng mạng xã hội tại Việt Nam là bao nhiêu mỗi ngày?",Khoảng 2 giờ 25 phút/ngày.,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]",simple,106.52828216552734,"Error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: ""API_KEY_INVALID""
+domain: ""googleapis.com""
+metadata {
+  key: ""service""
+  value: ""generativelanguage.googleapis.com""
+}
+, locale: ""en-US""
+message: ""API Key not found. Please pass a valid API key.""
+]"

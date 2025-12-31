@@ -1,0 +1,56 @@
+{
+  "generated_at": "2025-12-31T18:17:09.576289",
+  "total_cases": 5,
+  "distribution": {
+    "simple": 5,
+    "reasoning": 0,
+    "multi_context": 0
+  },
+  "test_cases": [
+    {
+      "question": "Dây thần kinh lớn nhất cơ thể là gì?",
+      "ground_truth": "Dây thần kinh hông to.",
+      "contexts": [
+        "chính xác các tổn thương tiền đình.16Phẫu thuật: Chỉ định cho u dây thần kinh số 8 hoặc khi điều trị nội khoa thất bại.166.3. Đau Dây Thần Kinh Tọa: Nỗi Ám Ảnh Vùng Thắt LưngĐau thần kinh tọa là hội chứng đau dọc theo đường đi của dây thần kinh hông to (dây thần kinh lớn nhất cơ thể), bắt nguồn từ đám rối thắt lưng cùng, chạy qua mông, xuống mặt sau đùi, bắp chân và bàn chân.34Nguyên nhân hàng đầu: Thoát vị đĩa đệm cột sống thắt lưng (thường ở tầng L4-L5 hoặc L5-S1) chiếm tới 90% trường hợp."
+      ],
+      "evolution_type": "simple",
+      "metadata": {}
+    },
+    {
+      "question": "Khi bụi hoặc hóa chất vào mắt, điều tuyệt đối không nên làm là gì?",
+      "ground_truth": "Tuyệt đối không dụi mắt.",
+      "contexts": [
+        "làm việc cũng rất hữu ích.Sơ cứu mắt đúng cách: Khi bụi hoặc hóa chất vào mắt: Tuyệt đối không dụi mắt. Phản xạ chớp mắt sẽ tiết nước mắt rửa trôi dị vật. Nếu là hóa chất, phải rửa ngay dưới vòi nước sạch liên tục 15-20 phút rồi mới đi cấp cứu. Nếu là bụi găm vào, dùng nước muối sinh lý nhỏ nhiều giọt để đẩy trôi, hoặc dùng tăm bông khều nhẹ (chỉ khi dị vật ở kết mạc, không tự lấy dị vật trên giác mạc).3Rèn luyện Trí não: \"Use it or Lose it\" (Dùng hoặc mất).Thiền định: Nghiên cứu cho thấy thiền"
+      ],
+      "evolution_type": "simple",
+      "metadata": {}
+    },
+    {
+      "question": "Bệnh viện Mắt TP.HCM có địa chỉ ở đâu?",
+      "ground_truth": "Bệnh viện Mắt TP.HCM có địa chỉ tại 280 Điện Biên Phủ, Phường 7, Quận 3, TP.HCM.",
+      "contexts": [
+        "Khu vực TP. Hồ Chí Minh\nBệnh viện Mắt TP.HCM\n\nLiên kết: Trung tâm chỉ đạo tuyến về mắt cho toàn miền Nam.\n\nĐánh giá: Tương tự Mắt TW ở Hà Nội, đây là \"thành trì\" chuyên môn. Nơi đây sở hữu nhiều \"bàn tay vàng\" trong phẫu thuật Phaco và Relex Smile. Tuy nhiên, bạn cần chuẩn bị tâm lý chờ đợi hoặc đăng ký khám dịch vụ VIP để tiết kiệm thời gian.\n\nĐịa chỉ: 280 Điện Biên Phủ, Phường 7, Quận 3, TP.HCM."
+      ],
+      "evolution_type": "simple",
+      "metadata": {}
+    },
+    {
+      "question": "Nguyên nhân gây bệnh viêm kết mạc được phân chia thành mấy nhóm chính?",
+      "ground_truth": "ba nhóm chính",
+      "contexts": [
+        "lòng trắng mắt (kết mạc nhãn cầu) và mặt trong của mi mắt (kết mạc mi).1 Mặc dù là một bệnh lý phổ biến, việc chẩn đoán chính xác nguyên nhân là yếu tố quyết định đến hiệu quả điều trị và ngăn ngừa lây lan trong cộng đồng.Cơ chế bệnh sinh và Dịch tễ họcVề mặt dịch tễ, viêm kết mạc có thể bùng phát thành dịch, đặc biệt là tại các trường học, công sở hoặc khu dân cư đông đúc. Nguyên nhân gây bệnh được phân chia thành ba nhóm chính, mỗi nhóm có đặc điểm sinh học và lâm sàng riêng biệt:Viêm kết mạc"
+      ],
+      "evolution_type": "simple",
+      "metadata": {}
+    },
+    {
+      "question": "Tính chất của chóng mặt dữ dội là gì?",
+      "ground_truth": "Chóng mặt dữ dội, xoay tròn đồ vật, thường khởi phát khi thay đổi tư thế đầu.",
+      "contexts": [
+        "thần kinh tiền đình.31Đột quỵ não hệ sống nền, U não, U dây thần kinh thính giác, Xơ cứng rải rác.30Tính chất chóng mặtChóng mặt dữ dội, xoay tròn đồ vật, thường khởi phát khi thay đổi tư thế đầu.Chóng mặt cảm giác bồng bềnh, choáng váng, đi lại loạng choạng như say rượu. Ít dữ dội hơn nhưng dai dẳng.Triệu chứng đi kèmÙ tai, giảm thính lực, nôn mửa nhiều.Nhìn đôi, nói khó, tê yếu tay chân (dấu hiệu thần kinh khu trú).Tiên lượngThường lành tính, đáp ứng tốt điều trị nhưng hay tái phát.Nguy hiểm,"
+      ],
+      "evolution_type": "simple",
+      "metadata": {}
+    }
+  ]
+}
