@@ -21,6 +21,20 @@
 
 ---
 
+## 🔄 Cập nhật mới nhất (31/12/2025)
+
+**✅ Checklist cập nhật:**
+
+- [x] **Benchmark công nghệ xử lý ảnh:** Đã thêm đánh giá hiệu năng và so sánh các công nghệ Computer Vision được sử dụng trong project (MediaPipe, OpenCV).
+- [x] **Module Evaluation:** Hoàn thiện module đánh giá tự động tại `src/chatbot/evaluation/` với các tiêu chí:
+  - Đánh giá chất lượng phản hồi Chatbot (BLEU, ROUGE, BERTScore)
+  - Đánh giá hiệu suất RAG (Context Relevance, Answer Relevance, Faithfulness)
+  - Đánh giá hệ thống tổng thể với bộ test cases chuẩn
+- [x] **Kết quả đánh giá Chatbot:** Cập nhật file [result.md](src/chatbot/evaluation/result.md) với kết quả chi tiết các chỉ số BLEU, ROUGE, BERTScore và trực quan hóa biểu đồ.
+- [x] **Phụ lục báo cáo:** Bổ sung các tài liệu kỹ thuật, biểu đồ đánh giá và số liệu thống kê vào phụ lục báo cáo.
+
+---
+
 ## 📑 Tổng quan cấu trúc báo cáo
 
 ---
